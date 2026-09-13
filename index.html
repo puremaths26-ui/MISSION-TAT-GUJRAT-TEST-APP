@@ -7,6 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Gujarati:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,500;8..60,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.12.1/firebase-app-compat.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.12.1/firebase-auth-compat.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.12.1/firebase-firestore-compat.min.js"></script>
@@ -136,6 +138,16 @@
   .subtabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
   .subtabs button{font-size:13px;font-weight:600;padding:7px 14px;border-radius:20px;border:1px solid var(--paper-line);background:#fff;color:var(--muted);cursor:pointer;}
   .subtabs button.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+
+  .bank-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;}
+  .bank-chip{display:flex;align-items:center;gap:8px;border:1px solid var(--paper-line);background:#FFFEFB;border-radius:20px;padding:6px 14px;font-size:13.5px;cursor:pointer;}
+  .bank-chip.selected{border-color:var(--teal);background:#EAF5F3;}
+  .bank-chip .count{color:var(--muted);font-size:12px;}
+  .qpreview{border-top:1px solid var(--paper-line);margin-top:14px;padding-top:12px;max-height:260px;overflow:auto;}
+  .qpreview .qrow{padding:8px 0;border-bottom:1px dashed var(--paper-line);font-size:13.5px;}
+  .qpreview .qrow b{color:var(--ink-dark);}
+  .qpreview .qrow .opts{color:var(--muted);margin-top:2px;}
+  .qpreview .qrow .ans{color:var(--green);font-weight:600;}
 
   #loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:18px;text-align:center;padding:20px;}
   #loginScreen h1{font-family:'Source Serif 4',serif;color:var(--ink-dark);font-size:26px;margin:0;}
@@ -298,36 +310,78 @@
 
     <div id="adminContent" style="display:none;">
     <div class="subtabs">
-      <button data-admin="create" class="active">ટેસ્ટ બનાવો</button>
+      <button data-admin="bank" class="active">પ્રશ્નબેંક</button>
+      <button data-admin="create">ટેસ્ટ બનાવો</button>
       <button data-admin="manage">ટેસ્ટ મેનેજ કરો</button>
       <button data-admin="users">યુઝર્સ</button>
       <button data-admin="submissions">બધા સબમિશન</button>
     </div>
 
-    <div class="card admin-panel" id="admin-create">
-      <h2>નવો ટેસ્ટ બનાવો</h2>
-      <label>ટેસ્ટનું નામ</label>
-      <input type="text" id="newTestTitle" placeholder="દા.ત. TET 2 - Gujarati - Full Test 1">
-      <label>પ્રશ્નો પેસ્ટ કરો</label>
-      <textarea id="newTestBulk" placeholder="Q) ભારતનું બંધારણ ક્યારે અમલમાં આવ્યું?
+    <div class="card admin-panel" id="admin-bank">
+      <h2>પ્રશ્નબેંક</h2>
+      <div class="sub">બેંક બનાવો, પ્રશ્નો પેસ્ટ કરો અથવા ફાઈલ (PDF/DOCX/TXT) અપલોડ કરીને ઉમેરો.</div>
+
+      <div class="row">
+        <div>
+          <label>નવી બેંકનું નામ</label>
+          <input type="text" id="newBankName" placeholder="દા.ત. TET 2 - Gujarati">
+        </div>
+        <div style="flex:none;align-self:flex-end;">
+          <button class="btn secondary" id="createBankBtn">બેંક બનાવો</button>
+        </div>
+      </div>
+
+      <label>હાલની બેંકો (ક્લિક કરીને પસંદ કરો)</label>
+      <div class="bank-list" id="bankChipList" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;"></div>
+
+      <div id="addQCard" style="display:none;margin-top:16px;">
+        <h2 style="font-size:16px;">પ્રશ્નો ઉમેરો — <span id="activeBankLabel" style="color:var(--teal)"></span></h2>
+        <label>ફાઈલ અપલોડ કરો (PDF / DOCX / TXT)</label>
+        <input type="file" id="fileInput" accept=".pdf,.docx,.txt,.md" multiple>
+        <div class="btn-row"><button class="btn secondary" id="importFileBtn">ફાઈલમાંથી પ્રશ્નો કાઢો</button></div>
+        <div id="importProgress"></div>
+        <div id="importNotice"></div>
+        <div id="failedBlocksWrap"></div>
+
+        <label>અથવા સીધા ટેક્સ્ટ પેસ્ટ કરો</label>
+        <textarea id="bulkInput" placeholder="Q) ભારતનું બંધારણ ક્યારે અમલમાં આવ્યું?
 A) 1947
 B) 1950
 C) 1949
 D) 1952
 Ans: B
-Marks: 1
-
-Q) આગળનો પ્રશ્ન...
-A) ...
-B) ...
-C) ...
-D) ...
-Ans: A"></textarea>
-      <div class="helpbox">ફોર્મેટ: Q) પ્રશ્ન → A) B) C) D) વિકલ્પો → Ans: A/B/C/D → Marks: (વૈકલ્પિક, ડિફોલ્ટ 1). દરેક પ્રશ્ન વચ્ચે ખાલી લાઈન રાખો.</div>
-      <div class="btn-row">
-        <button class="btn secondary" id="parsePreviewBtn">પ્રશ્નો ચકાસો</button>
+Marks: 1"></textarea>
+        <div class="helpbox">ફોર્મેટ: Q) પ્રશ્ન → A) B) C) D) વિકલ્પો → Ans: A/B/C/D → Marks: (વૈકલ્પિક). દરેક પ્રશ્ન વચ્ચે ખાલી લાઈન રાખો. ફાઈલમાંથી કાઢતી વખતે "1. પ્રશ્ન" + (A)(B)(C)(D) + "Ans/જવાબ: B" જેવા ફોર્મેટ પણ આપોઆપ ઓળખાય છે.</div>
+        <div class="btn-row">
+          <button class="btn" id="parseAddBtn">બેંકમાં ઉમેરો</button>
+          <button class="btn secondary" id="clearBulkBtn">ટેક્સ્ટ સાફ કરો</button>
+        </div>
+        <div id="parseAddNotice"></div>
+        <div class="qpreview" id="bankPreview" style="border-top:1px solid var(--paper-line);margin-top:14px;padding-top:12px;max-height:260px;overflow:auto;"></div>
       </div>
-      <div id="parseNotice"></div>
+    </div>
+
+    <div class="card admin-panel" id="admin-create" style="display:none;">
+      <h2>ટેસ્ટ બનાવો (બેંકમાંથી)</h2>
+      <div class="sub">બેંક(ઓ) પસંદ કરો, ગુણ નક્કી કરો — શફલ કરેલો ટેસ્ટ બનશે.</div>
+      <label>પ્રશ્નબેંક પસંદ કરો (એક કે વધુ)</label>
+      <div class="bank-list" id="genBankList" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;"></div>
+
+      <label>ટેસ્ટનું નામ</label>
+      <input type="text" id="newTestTitle" placeholder="દા.ત. TET 2 - Gujarati - Full Test 1">
+
+      <div class="row">
+        <div><label>કુલ ગુણ</label><input type="number" id="totalMarks" value="50"></div>
+        <div><label>પ્રતિ પ્રશ્ન ગુણ</label><input type="number" id="marksPerQ" value="1"></div>
+        <div><label>વિકલ્પોનો ક્રમ</label>
+          <select id="shuffleOpts"><option value="yes">દરેક વખતે શફલ કરો</option><option value="no">શફલ ના કરો</option></select>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn secondary" id="genPreviewBtn">ટેસ્ટ જનરેટ કરો (પ્રીવ્યૂ)</button>
+      </div>
+      <div id="genNotice"></div>
       <div id="parsePreviewWrap"></div>
       <div class="btn-row">
         <button class="btn" id="saveNewTestBtn" style="display:none;">ટેસ્ટ સેવ કરો (પબ્લિશ કરો)</button>
@@ -476,8 +530,7 @@ document.getElementById('mainTabs').addEventListener('click', (e)=>{
     if(adminUnlocked){
       document.getElementById('adminGate').style.display='none';
       document.getElementById('adminContent').style.display='block';
-      loadAdminTests();
-    }else{
+      loadBanks();
       document.getElementById('adminGate').style.display='block';
       document.getElementById('adminContent').style.display='none';
     }
@@ -493,8 +546,7 @@ document.getElementById('adminUnlockBtn').addEventListener('click', ()=>{
     document.getElementById('adminContent').style.display='block';
     document.getElementById('adminPassInput').value='';
     notice.innerHTML='';
-    loadAdminTests();
-  }else{
+    loadBanks();
     notice.innerHTML = '<div class="notice err">ખોટો પાસવર્ડ.</div>';
   }
 });
@@ -776,6 +828,12 @@ function renderProfile(){
 }
 
 // ================= ADMIN =================
+let banks = {};        // bankId -> {name, questions:[{id,text,options:[str,str,str,str],correct,marks}]}
+let activeBank = null;  // bankId currently selected for adding questions
+let genSelected = new Set(); // bankIds selected for test generation
+let banksLoaded = false;
+let generatedTest = null; // {questions:[{id,text,marks,options:[{text,isCorrect}]}], totalMarks}
+
 document.querySelector('#admin .subtabs').addEventListener('click', (e)=>{
   const btn = e.target.closest('button[data-admin]');
   if(!btn) return;
@@ -783,10 +841,73 @@ document.querySelector('#admin .subtabs').addEventListener('click', (e)=>{
   btn.classList.add('active');
   document.querySelectorAll('.admin-panel').forEach(p=>p.style.display='none');
   document.getElementById('admin-'+btn.dataset.admin).style.display = 'block';
+  if(btn.dataset.admin==='bank' || btn.dataset.admin==='create') loadBanks();
   if(btn.dataset.admin==='manage') loadAdminTests();
   if(btn.dataset.admin==='users') loadAdminUsers();
   if(btn.dataset.admin==='submissions') loadAdminSubmissions();
 });
+
+async function loadBanks(force){
+  if(banksLoaded && !force) { renderBankChips(); renderGenBankList(); return; }
+  try{
+    const q = await db.collection('banks').get();
+    banks = {};
+    q.forEach(doc=>{ banks[doc.id] = doc.data(); });
+    banksLoaded = true;
+    renderBankChips();
+    renderGenBankList();
+  }catch(e){
+    document.getElementById('bankChipList').innerHTML = `<div class="notice err">બેંક લોડ કરવામાં ભૂલ: ${esc(e.message)}</div>`;
+  }
+}
+
+function renderBankChips(){
+  const wrap = document.getElementById('bankChipList');
+  const ids = Object.keys(banks);
+  if(ids.length===0){ wrap.innerHTML = '<span style="color:var(--muted);font-size:13px;">હજુ કોઈ બેંક નથી — ઉપર નામ લખીને બનાવો.</span>'; return; }
+  wrap.innerHTML = ids.map(id=>`
+    <div class="bank-chip ${activeBank===id?'selected':''}" data-id="${id}" style="cursor:pointer;display:flex;align-items:center;gap:8px;border:1px solid var(--paper-line);background:#FFFEFB;border-radius:20px;padding:6px 12px;font-size:13.5px;${activeBank===id?'border-color:var(--teal);background:#EAF5F3;':''}">
+      <span>${esc(banks[id].name)}</span><span style="color:var(--muted);font-size:12px;">${(banks[id].questions||[]).length} પ્રશ્નો</span>
+    </div>`).join('');
+  wrap.querySelectorAll('.bank-chip').forEach(chip=>{
+    chip.addEventListener('click', ()=>{
+      activeBank = chip.dataset.id;
+      document.getElementById('addQCard').style.display = 'block';
+      document.getElementById('activeBankLabel').textContent = banks[activeBank].name;
+      renderBankChips();
+      renderBankPreview();
+    });
+  });
+}
+
+function renderBankPreview(){
+  const wrap = document.getElementById('bankPreview');
+  if(!activeBank || !banks[activeBank]){ wrap.innerHTML=''; return; }
+  const qs = banks[activeBank].questions||[];
+  if(qs.length===0){ wrap.innerHTML = '<div style="color:var(--muted);font-size:13px;">આ બેંકમાં હજુ કોઈ પ્રશ્ન નથી.</div>'; return; }
+  wrap.innerHTML = qs.map((q,i)=>`<div class="qrow" style="padding:8px 0;border-bottom:1px dashed var(--paper-line);font-size:13.5px;"><b style="color:var(--ink-dark);">${i+1}. ${esc(q.text)}</b><div style="color:var(--green);font-weight:600;">સાચો: ${esc(q.options[q.correct]||'')}</div></div>`).join('');
+}
+
+document.getElementById('createBankBtn').addEventListener('click', async ()=>{
+  const nameInput = document.getElementById('newBankName');
+  const name = nameInput.value.trim();
+  if(!name) return;
+  try{
+    const ref = await db.collection('banks').add({ name, questions: [], createdAt: FieldValue.serverTimestamp() });
+    banks[ref.id] = { name, questions: [] };
+    activeBank = ref.id;
+    nameInput.value = '';
+    document.getElementById('addQCard').style.display = 'block';
+    document.getElementById('activeBankLabel').textContent = name;
+    renderBankChips(); renderGenBankList(); renderBankPreview();
+  }catch(e){
+    alert('બેંક બનાવવામાં ભૂલ: '+e.message);
+  }
+});
+
+async function saveBank(bankId){
+  await db.collection('banks').doc(bankId).update({ questions: banks[bankId].questions, updatedAt: FieldValue.serverTimestamp() });
+}
 
 function parseBulkQuestions(text){
   const blocks = text.split(/\n\s*\n/).map(b=>b.trim()).filter(Boolean);
@@ -806,50 +927,229 @@ function parseBulkQuestions(text){
       failedRaw.push(block);
       return;
     }
-    questions.push({
-      id: uid(), text: qText, marks: marks||1,
-      options: opts.map((o,i)=>({ text:o||'', isCorrect: i===(ansLetter.charCodeAt(0)-65) }))
-    });
+    questions.push({ id: uid(), text: qText, options: opts.map(o=>o||''), correct: ansLetter.charCodeAt(0)-65, marks: marks||1 });
   });
   return {questions, errors, failedRaw};
 }
 
-let parsedForSave = null;
-document.getElementById('parsePreviewBtn').addEventListener('click', ()=>{
-  const text = document.getElementById('newTestBulk').value;
-  const {questions, errors} = parseBulkQuestions(text);
-  const notice = document.getElementById('parseNotice');
-  const previewWrap = document.getElementById('parsePreviewWrap');
-  if(questions.length===0){
-    notice.innerHTML = '<div class="notice err">કોઈ પ્રશ્ન ઓળખાયો નહીં. ફોર્મેટ ચકાસો.</div>';
-    document.getElementById('saveNewTestBtn').style.display = 'none';
-    previewWrap.innerHTML=''; parsedForSave = null;
-    return;
+document.getElementById('clearBulkBtn').addEventListener('click', ()=>{
+  document.getElementById('bulkInput').value=''; document.getElementById('parseAddNotice').innerHTML='';
+});
+
+document.getElementById('parseAddBtn').addEventListener('click', async ()=>{
+  if(!activeBank) return;
+  const text = document.getElementById('bulkInput').value;
+  if(!text.trim()) return;
+  const {questions, errors, failedRaw} = parseBulkQuestions(text);
+  const notice = document.getElementById('parseAddNotice');
+  if(questions.length===0){ notice.innerHTML = '<div class="notice err">એક પણ પ્રશ્ન વાંચી શકાયો નહીં. ફોર્મેટ ચકાસો.</div>'; return; }
+  banks[activeBank].questions = (banks[activeBank].questions||[]).concat(questions);
+  await saveBank(activeBank);
+  document.getElementById('bulkInput').value = failedRaw.join('\n\n');
+  let msg = `<div class="notice ok">${questions.length} પ્રશ્નો "${esc(banks[activeBank].name)}" બેંકમાં ઉમેરાયા.</div>`;
+  if(errors.length) msg += `<div class="notice warn">${errors.length} બ્લોક પાર્સ ના થયા — સુધારીને ફરી ઉમેરો.</div>`;
+  notice.innerHTML = msg;
+  renderBankChips(); renderGenBankList(); renderBankPreview();
+});
+
+// ---------- file import: extraction (reused from earlier tool) ----------
+async function extractTextFromFile(file){
+  const ext = file.name.split('.').pop().toLowerCase();
+  if(ext==='txt' || ext==='md'){ return await file.text(); }
+  if(ext==='docx'){
+    const buf = await file.arrayBuffer();
+    const result = await mammoth.extractRawText({arrayBuffer: buf});
+    return result.value;
   }
-  parsedForSave = questions;
-  notice.innerHTML = `<div class="notice ok">${questions.length} પ્રશ્નો મળ્યા${errors.length? ', '+errors.length+' બ્લોક છોડી દેવાયા':''}.</div>`;
-  previewWrap.innerHTML = `<div class="helpbox" style="max-height:220px;overflow:auto;">${questions.map((q,i)=>`${i+1}. ${esc(q.text)} — સાચો: ${esc(q.options.find(o=>o.isCorrect).text)}`).join('\n')}</div>`;
+  if(ext==='pdf'){
+    const buf = await file.arrayBuffer();
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    const pdf = await pdfjsLib.getDocument({data: buf}).promise;
+    let fullText='';
+    const linesFromItems = (items)=>{
+      items.sort((a,b)=> b.y-a.y || a.x-b.x);
+      let lines=[], curLine=[], curY=null;
+      const tol=3;
+      let out='';
+      items.forEach(it=>{
+        if(curY===null || Math.abs(it.y-curY)<=tol){ curLine.push(it); if(curY===null) curY=it.y; }
+        else{ lines.push(curLine); curLine=[it]; curY=it.y; }
+      });
+      if(curLine.length) lines.push(curLine);
+      lines.forEach(line=>{
+        line.sort((a,b)=>a.x-b.x);
+        out += line.map(i=>i.str).join(' ') + '\n';
+      });
+      return out;
+    };
+    for(let p=1;p<=pdf.numPages;p++){
+      const page = await pdf.getPage(p);
+      const content = await page.getTextContent();
+      const pageWidth = page.view[2]-page.view[0];
+      const items = content.items.map(i=>({str:i.str, x:i.transform[4], y:i.transform[5]})).filter(i=>i.str.trim());
+      if(items.length===0) continue;
+      const xs = items.map(i=>i.x).sort((a,b)=>a-b);
+      let bestGap=0, splitX=null;
+      for(let i=1;i<xs.length;i++){
+        const gap = xs[i]-xs[i-1];
+        const mid = (xs[i]+xs[i-1])/2;
+        if(mid > pageWidth*0.25 && mid < pageWidth*0.75 && gap > bestGap){ bestGap=gap; splitX=mid; }
+      }
+      const isTwoCol = splitX!==null && bestGap > pageWidth*0.07;
+      if(isTwoCol){
+        const left = items.filter(i=>i.x < splitX);
+        const right = items.filter(i=>i.x >= splitX);
+        fullText += linesFromItems(left) + '\n' + linesFromItems(right) + '\n';
+      }else{
+        fullText += linesFromItems(items) + '\n';
+      }
+    }
+    return fullText;
+  }
+  throw new Error('Unsupported file type');
+}
+
+function extractOptionsFromRemainder(remainderLines){
+  const optRe = /^\(?([A-Da-d1-4])[\.\):]\s*(.*)$/;
+  let markers = []; let questionLines = []; let sawFirstOption = false;
+  remainderLines.forEach(line=>{
+    const m = line.match(optRe);
+    if(m){ sawFirstOption = true; markers.push({key:m[1].toUpperCase(), text:m[2].trim()}); }
+    else if(!sawFirstOption){ questionLines.push(line); }
+    else if(markers.length){ markers[markers.length-1].text += ' ' + line.trim(); }
+  });
+  if(markers.length>=2){ return {question: questionLines.join(' ').trim(), options: markers.map(m=>m.text)}; }
+  const inlineIdx = remainderLines.findIndex(l=>/\(?[A-Da-d1-4][\.\):]/.test(l) && (l.match(/\(?[A-Da-d1-4][\.\):]/g)||[]).length>=3);
+  if(inlineIdx>=0){
+    const before = remainderLines.slice(0, inlineIdx).join(' ').trim();
+    const segs = remainderLines[inlineIdx].split(/\s*\(?[A-Da-d1-4][\.\):]\s*/).map(s=>s.trim()).filter(Boolean);
+    const optsOnly = segs.length>4 ? segs.slice(segs.length-4) : segs;
+    const leftover = segs.length>4 ? segs.slice(0,segs.length-4).join(' ') : '';
+    const after = remainderLines.slice(inlineIdx+1).join(' ').trim();
+    return {question: [before, leftover, after].filter(Boolean).join(' ').trim(), options: optsOnly};
+  }
+  return {question: remainderLines.join(' ').trim(), options: []};
+}
+
+function normalizeExamText(raw){
+  let text = raw.replace(/\r/g,'').replace(/\t/g,' ').replace(/[ ]{2,}/g,' ');
+  text = text.replace(/\n{3,}/g,'\n\n');
+  const ansRe = /(?:^|\n)[ \t]*(?:Ans(?:wer)?|Correct\s*Answer|સાચો\s*જવાબ|જવાબ)\s*[:\-]\s*\(?([A-Da-d1-4])\)?(?![^\n]*\?)[^\n]*/gim;
+  const matches = [...text.matchAll(ansRe)];
+  const questions = []; const failedRaw = [];
+  if(matches.length===0){ failedRaw.push(text.trim()); return {questions, failedRaw}; }
+  let cursor = 0;
+  matches.forEach((m)=>{
+    const blockText = text.slice(cursor, m.index).trim();
+    cursor = m.index + m[0].length;
+    let ansKey = m[1].toUpperCase();
+    const ansCorrect = /[1-4]/.test(ansKey) ? (parseInt(ansKey,10)-1) : (ansKey.charCodeAt(0)-65);
+    let cleaned = blockText.replace(/^.{0,80}[\d૦-૯]{1,5}\s*[\.\):]\s*(?=\S)/, '');
+    if(!cleaned.trim()) cleaned = blockText;
+    const lines = cleaned.split('\n').map(l=>l.trim()).filter(Boolean);
+    if(lines.length===0){ failedRaw.push(blockText); return; }
+    const {question, options} = extractOptionsFromRemainder(lines);
+    if(!question || options.filter(Boolean).length<2 || ansCorrect<0 || ansCorrect>3 || ansCorrect>=options.length){ failedRaw.push(blockText); return; }
+    while(options.length<4) options.push('');
+    questions.push({ id: uid(), text: question, options: options.slice(0,4), correct: ansCorrect, marks: 1 });
+  });
+  return {questions, failedRaw};
+}
+
+document.getElementById('importFileBtn').addEventListener('click', async ()=>{
+  if(!activeBank) return;
+  const fileInput = document.getElementById('fileInput');
+  const progress = document.getElementById('importProgress');
+  const notice = document.getElementById('importNotice');
+  const failedWrap = document.getElementById('failedBlocksWrap');
+  notice.innerHTML=''; failedWrap.innerHTML='';
+  if(!fileInput.files.length){ notice.innerHTML = '<div class="notice err">પહેલા ફાઈલ પસંદ કરો.</div>'; return; }
+  const files = Array.from(fileInput.files);
+  let totalAdded = 0; let allFailed = []; let fileErrors = [];
+  for(const file of files){
+    progress.innerHTML = `<div class="notice warn">"${esc(file.name)}" માંથી ટેક્સ્ટ કાઢી રહ્યા છીએ...</div>`;
+    try{
+      const rawText = await extractTextFromFile(file);
+      const {questions, failedRaw} = normalizeExamText(rawText);
+      banks[activeBank].questions = (banks[activeBank].questions||[]).concat(questions);
+      await saveBank(activeBank);
+      totalAdded += questions.length;
+      failedRaw.forEach(b=>allFailed.push(`[${file.name}] ${b}`));
+      if(questions.length===0 && failedRaw.length===0){ fileErrors.push(`"${file.name}": કોઈ ટેક્સ્ટ મળ્યું નહીં (કદાચ સ્કેન કરેલી ઈમેજ PDF).`); }
+    }catch(err){ fileErrors.push(`"${file.name}": ${err.message||String(err)}`); }
+  }
+  progress.innerHTML='';
+  let msg = `<div class="notice ok">કુલ ${totalAdded} પ્રશ્નો "${esc(banks[activeBank].name)}" બેંકમાં ઉમેરાયા (${files.length} ફાઈલમાંથી).</div>`;
+  if(allFailed.length) msg += `<div class="notice warn">${allFailed.length} બ્લોક આપોઆપ ઓળખાયા નહીં — નીચે છે, "પ્રશ્નો ઉમેરો" બોક્સમાં સુધારીને ઉમેરી શકાય.</div>`;
+  if(fileErrors.length) msg += `<div class="notice err">${fileErrors.join('<br>')}</div>`;
+  notice.innerHTML = msg;
+  if(allFailed.length) failedWrap.innerHTML = `<div class="helpbox" style="max-height:200px;overflow:auto;">${allFailed.map((b,i)=>`#${i+1}: ${esc(b).slice(0,300)}${b.length>300?'…':''}`).join('\n')}</div>`;
+  fileInput.value='';
+  renderBankChips(); renderGenBankList(); renderBankPreview();
+});
+
+// ---------- generate test from bank(s) ----------
+function renderGenBankList(){
+  const wrap = document.getElementById('genBankList');
+  const ids = Object.keys(banks);
+  if(ids.length===0){ wrap.innerHTML = '<span style="color:var(--muted);font-size:13px;">પહેલા "પ્રશ્નબેંક" ટેબમાં જઈને પ્રશ્નો ઉમેરો.</span>'; return; }
+  wrap.innerHTML = ids.map(id=>`
+    <div class="bank-chip ${genSelected.has(id)?'selected':''}" data-id="${id}" style="cursor:pointer;display:flex;align-items:center;gap:8px;border:1px solid var(--paper-line);background:#FFFEFB;border-radius:20px;padding:6px 12px;font-size:13.5px;${genSelected.has(id)?'border-color:var(--teal);background:#EAF5F3;':''}">
+      <span>${esc(banks[id].name)}</span><span style="color:var(--muted);font-size:12px;">${(banks[id].questions||[]).length} પ્રશ્નો</span>
+    </div>`).join('');
+  wrap.querySelectorAll('.bank-chip').forEach(chip=>{
+    chip.addEventListener('click', ()=>{
+      const id = chip.dataset.id;
+      if(genSelected.has(id)) genSelected.delete(id); else genSelected.add(id);
+      renderGenBankList();
+    });
+  });
+}
+
+document.getElementById('genPreviewBtn').addEventListener('click', ()=>{
+  const notice = document.getElementById('genNotice');
+  const previewWrap = document.getElementById('parsePreviewWrap');
+  if(genSelected.size===0){ notice.innerHTML = '<div class="notice err">ઓછામાં ઓછી એક બેંક પસંદ કરો.</div>'; return; }
+  let pool = [];
+  genSelected.forEach(id => pool = pool.concat(banks[id].questions||[]));
+  if(pool.length===0){ notice.innerHTML = '<div class="notice err">પસંદ કરેલી બેંક(ઓ)માં કોઈ પ્રશ્ન નથી.</div>'; return; }
+  const totalMarks = parseInt(document.getElementById('totalMarks').value,10) || 0;
+  const marksPerQ = parseInt(document.getElementById('marksPerQ').value,10) || 1;
+  const doShuffleOpts = document.getElementById('shuffleOpts').value === 'yes';
+  let numQ = Math.floor(totalMarks / marksPerQ);
+  let warn = '';
+  if(numQ > pool.length){ warn = `પસંદ કરેલી બેંક(ઓ)માં ફક્ત ${pool.length} પ્રશ્નો છે — એટલો જ ટેસ્ટ બનશે.`; numQ = pool.length; }
+  else if(numQ*marksPerQ !== totalMarks){ warn = `બરાબર ભાગી શકાતું નથી — ${numQ} પ્રશ્નો (${numQ*marksPerQ} ગુણ)નો ટેસ્ટ બનશે.`; }
+  if(numQ===0){ notice.innerHTML = '<div class="notice err">ગુણ તપાસો — 0 પ્રશ્નો બને છે.</div>'; return; }
+
+  const chosen = shuffle(pool).slice(0, numQ);
+  const testQuestions = chosen.map(q=>{
+    let opts = q.options.map((text,idx)=>({text, isCorrect: idx===q.correct}));
+    if(doShuffleOpts) opts = shuffle(opts);
+    return { id: uid(), text: q.text, marks: q.marks || marksPerQ, options: opts };
+  });
+  generatedTest = { questions: testQuestions, totalMarks: testQuestions.reduce((s,q)=>s+q.marks,0) };
+  notice.innerHTML = (warn? `<div class="notice warn">${warn}</div>` : '') + `<div class="notice ok">${testQuestions.length} પ્રશ્નોનો ટેસ્ટ તૈયાર — નીચે નામ લખીને "ટેસ્ટ સેવ કરો" દબાવો.</div>`;
+  previewWrap.innerHTML = `<div class="helpbox" style="max-height:220px;overflow:auto;">${testQuestions.map((q,i)=>`${i+1}. ${esc(q.text)} — સાચો: ${esc(q.options.find(o=>o.isCorrect).text)}`).join('\n')}</div>`;
   document.getElementById('saveNewTestBtn').style.display = 'inline-block';
 });
 
 document.getElementById('saveNewTestBtn').addEventListener('click', async ()=>{
-  if(!parsedForSave || parsedForSave.length===0) return;
+  if(!generatedTest) return;
   const title = document.getElementById('newTestTitle').value.trim();
   const notice = document.getElementById('saveTestNotice');
   if(!title){ notice.innerHTML = '<div class="notice warn">ટેસ્ટનું નામ લખો.</div>'; return; }
-  const totalMarks = parsedForSave.reduce((s,q)=>s+q.marks,0);
   try{
     await db.collection('tests').add({
-      title, questions: parsedForSave, totalMarks, isActive: true,
+      title, questions: generatedTest.questions, totalMarks: generatedTest.totalMarks, isActive: true,
       createdBy: currentUser.email, createdAt: FieldValue.serverTimestamp()
     });
     notice.innerHTML = '<div class="notice ok">ટેસ્ટ સેવ અને પબ્લિશ થયો! "ટેસ્ટ આપો" ટેબમાં હવે દેખાશે.</div>';
     document.getElementById('newTestTitle').value = '';
-    document.getElementById('newTestBulk').value = '';
     document.getElementById('parsePreviewWrap').innerHTML = '';
-    document.getElementById('parseNotice').innerHTML = '';
+    document.getElementById('genNotice').innerHTML = '';
     document.getElementById('saveNewTestBtn').style.display = 'none';
-    parsedForSave = null;
+    generatedTest = null;
     loadTestList();
   }catch(e){
     notice.innerHTML = `<div class="notice err">સેવ કરવામાં ભૂલ: ${esc(e.message)}</div>`;
