@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mission TAT Gujrat — ટેસ્ટ એપ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Gujarati:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,500;8..60,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.12.1/firebase-app-compat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.12.1/firebase-auth-compat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.12.1/firebase-firestore-compat.min.js"></script>
+
+<style>
+  :root{
+    --ink:#1B3A5C; --ink-dark:#122840;
+    --paper:#FAF7EF; --paper-line:#E4DCC8;
+    --teal:#2A8F82; --teal-dark:#1F6E64;
+    --green:#3A7D44; --red:#B3402F; --gold:#B8862B;
+    --graphite:#332F28; --muted:#7A7460;
+    --bronze:#A0672E; --silver:#8B92A0; --plat:#5C9AA6; --diamond:#2E9BC7; --legendary:#8B3FD9;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--paper);
+    background-image:linear-gradient(var(--paper-line) 1px, transparent 1px);
+    background-size:100% 34px;
+    color:var(--graphite);
+    font-family:'Noto Sans Gujarati','Inter',sans-serif;
+    font-size:15.5px; line-height:1.55;
+  }
+  .app{max-width:960px;margin:0 auto;padding:28px 20px 60px;}
+  .masthead{
+    border-bottom:3px double var(--ink); padding-bottom:16px; margin-bottom:6px;
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;
+  }
+  .masthead h1{font-family:'Source Serif 4', serif; font-weight:700; font-size:26px; color:var(--ink-dark); margin:0;}
+  .masthead .tagline{font-size:13px; color:var(--muted); font-style:italic;}
+  .userchip{display:flex;align-items:center;gap:10px;}
+  .userchip img{width:34px;height:34px;border-radius:50%;border:1px solid var(--paper-line);}
+  .userchip .uname{font-size:13px;font-weight:600;color:var(--ink-dark);}
+  .userchip .badge-pill{font-size:11px;}
+  .userchip .signout{font-size:12px;color:var(--muted);text-decoration:underline;cursor:pointer;background:none;border:none;font-family:inherit;padding:0;}
+
+  nav.tabs{display:flex; gap:2px; margin:22px 0 26px; border-bottom:1px solid var(--paper-line); flex-wrap:wrap;}
+  nav.tabs button{
+    font-family:'Inter',sans-serif; font-size:14px; font-weight:600; background:transparent; border:none;
+    border-bottom:3px solid transparent; padding:10px 16px 12px; color:var(--muted); cursor:pointer;
+    transition:color .15s ease, border-color .15s ease;
+  }
+  nav.tabs button:hover{color:var(--ink-dark);}
+  nav.tabs button.active{color:var(--ink-dark); border-bottom-color:var(--teal);}
+
+  section{display:none;} section.active{display:block;}
+
+  .card{background:#fff; border:1px solid var(--paper-line); border-radius:3px; padding:20px 22px; margin-bottom:18px; box-shadow:0 1px 0 rgba(0,0,0,0.02);}
+  .card h2{font-family:'Source Serif 4', serif; font-size:19px; color:var(--ink-dark); margin:0 0 4px;}
+  .card .sub{color:var(--muted); font-size:13px; margin-bottom:14px;}
+
+  label{display:block;font-size:13px;font-weight:600;color:var(--ink-dark);margin:12px 0 5px;}
+  input[type=text], input[type=number], select, textarea{
+    width:100%; font-family:inherit; font-size:14.5px; padding:9px 11px;
+    border:1px solid #CFC6AD; border-radius:3px; background:#FFFEFB; color:var(--graphite);
+  }
+  textarea{min-height:150px;resize:vertical;font-family:'Inter',monospace;font-size:13.5px;line-height:1.6;}
+  input:focus, select:focus, textarea:focus{outline:2px solid var(--teal);outline-offset:1px;}
+  .row{display:flex;gap:14px;flex-wrap:wrap;} .row > div{flex:1;min-width:150px;}
+
+  .btn{font-family:'Inter',sans-serif; font-weight:600; font-size:14px; padding:10px 18px; border-radius:3px;
+    border:1px solid var(--ink); background:var(--ink); color:#fff; cursor:pointer; transition:background .15s ease;}
+  .btn:hover{background:var(--ink-dark);}
+  .btn.secondary{background:#fff;color:var(--ink-dark);}
+  .btn.secondary:hover{background:#F3EFE2;}
+  .btn.danger{background:#fff;color:var(--red);border-color:var(--red);}
+  .btn.danger:hover{background:#FBEEEC;}
+  .btn:disabled{opacity:.45;cursor:not-allowed;}
+  .btn-row{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;}
+
+  .testlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;}
+  .testcard{border:1px solid var(--paper-line);border-radius:4px;padding:14px 16px;background:#fff;}
+  .testcard h3{margin:0 0 6px;font-size:15.5px;font-family:'Source Serif 4',serif;color:var(--ink-dark);}
+  .testcard .meta{font-size:12px;color:var(--muted);margin-bottom:10px;}
+
+  .qcard{background:#fff;border:1px solid var(--paper-line);border-radius:3px;padding:16px 18px;margin-bottom:14px;}
+  .qcard .qhead{display:flex;justify-content:space-between;gap:10px;margin-bottom:10px;}
+  .qcard .qnum{font-weight:700;color:var(--ink-dark);}
+  .qcard .qmarks{font-size:12px;color:var(--muted);}
+  .qcard .qtext{font-size:15.5px;margin-bottom:12px;}
+  .opt{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:3px;margin-bottom:6px;cursor:pointer;border:1px solid transparent;}
+  .opt:hover{background:#F7F4EA;}
+  .opt.checked{background:#EAF5F3;border-color:var(--teal);}
+  .opt .bubble{width:26px;height:26px;flex:none;border-radius:50%;border:1.5px solid #9C947A;display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;color:var(--muted);}
+  .opt.checked .bubble{background:var(--teal);border-color:var(--teal);color:#fff;}
+  .opt.correct{background:#EAF6EC;border-color:var(--green);}
+  .opt.correct .bubble{background:var(--green);border-color:var(--green);color:#fff;}
+  .opt.wrong{background:#FBEEEC;border-color:var(--red);}
+  .opt.wrong .bubble{background:var(--red);border-color:var(--red);color:#fff;}
+
+  .progress-bar{height:6px;background:var(--paper-line);border-radius:4px;overflow:hidden;margin-bottom:18px;}
+  .progress-fill{height:100%;background:var(--teal);transition:width .2s ease;}
+
+  .empty{text-align:center;padding:32px 20px;color:var(--muted);border:1px dashed var(--paper-line);border-radius:4px;background:#fff;}
+
+  table.datatable{width:100%;border-collapse:collapse;font-size:13.5px;}
+  table.datatable th{text-align:left;font-size:11.5px;color:var(--muted);border-bottom:1px solid var(--paper-line);padding:6px 8px;font-weight:600;white-space:nowrap;}
+  table.datatable td{padding:9px 8px;border-bottom:1px dashed var(--paper-line);vertical-align:top;}
+  table.datatable tr:hover td{background:#FBF9F2;}
+
+  .rank-badge{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;font-size:11px;font-weight:700;color:#fff;background:var(--muted);}
+  .rank-badge.r1{background:var(--gold);} .rank-badge.r2{background:#8B8B8B;} .rank-badge.r3{background:#A0672E;}
+
+  .badge-pill{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px;color:#fff;}
+  .badge-pill.tier-Bronze{background:var(--bronze);}
+  .badge-pill.tier-Silver{background:var(--silver);}
+  .badge-pill.tier-Gold{background:var(--gold);}
+  .badge-pill.tier-Platinum{background:var(--plat);}
+  .badge-pill.tier-Diamond{background:var(--diamond);}
+  .badge-pill.tier-Legendary{background:linear-gradient(135deg,var(--legendary),var(--gold));}
+
+  .notice{font-size:13px;padding:9px 12px;border-radius:3px;margin-top:10px;}
+  .notice.warn{background:#FBF3E4;color:#8A5A0B;border:1px solid #EAD9AF;}
+  .notice.ok{background:#EAF6EC;color:var(--green);border:1px solid #CBE7CF;}
+  .notice.err{background:#FBEEEC;color:var(--red);border:1px solid #F0CFC8;}
+  .helpbox{font-size:12.5px;color:var(--muted);background:#F7F4EA;border-radius:3px;padding:10px 12px;margin-top:8px;white-space:pre-wrap;font-family:'Inter',monospace;line-height:1.7;}
+
+  .result-hero{text-align:center;padding:18px 0 6px;}
+  .result-hero .score{font-family:'Source Serif 4',serif;font-size:52px;font-weight:700;color:var(--ink-dark);}
+  .result-hero .outof{font-size:15px;color:var(--muted);}
+  .result-hero .xpgain{font-size:16px;font-weight:700;color:var(--teal-dark);margin-top:6px;}
+
+  .profile-hero{display:flex;align-items:center;gap:18px;flex-wrap:wrap;}
+  .profile-hero img{width:72px;height:72px;border-radius:50%;border:2px solid var(--paper-line);}
+  .profile-hero .name{font-family:'Source Serif 4',serif;font-size:22px;color:var(--ink-dark);}
+  .profile-hero .xp{font-size:13px;color:var(--muted);}
+
+  .subtabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+  .subtabs button{font-size:13px;font-weight:600;padding:7px 14px;border-radius:20px;border:1px solid var(--paper-line);background:#fff;color:var(--muted);cursor:pointer;}
+  .subtabs button.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+
+  #loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:18px;text-align:center;padding:20px;}
+  #loginScreen h1{font-family:'Source Serif 4',serif;color:var(--ink-dark);font-size:26px;margin:0;}
+  #loginScreen p{color:var(--muted);max-width:360px;font-size:14px;}
+  .gsignin{display:inline-flex;align-items:center;gap:10px;background:#fff;border:1px solid #CFC6AD;padding:11px 22px;border-radius:4px;font-weight:600;font-size:14.5px;cursor:pointer;color:var(--ink-dark);}
+  .gsignin:hover{background:#F7F4EA;}
+  .gsignin img{width:20px;height:20px;}
+
+  #printArea{display:none;}
+  @media print{
+    body > *:not(#printArea){display:none !important;}
+    #printArea{display:block !important;}
+  }
+  @media (max-width:600px){ .masthead{flex-direction:column;align-items:flex-start;} nav.tabs{overflow-x:auto;} }
+</style>
+</head>
+<body>
+
+<div id="loginScreen">
+  <h1>Mission TAT Gujrat — ટેસ્ટ એપ</h1>
+  <p>Google Account થી સાઇન ઇન કરો — ટેસ્ટ આપો, XP કમાવો, બેજ મેળવો અને લીડરબોર્ડમાં તમારું સ્થાન જુઓ.</p>
+  <button class="gsignin" id="googleSignInBtn">
+    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="">
+    Google થી સાઇન ઇન કરો
+  </button>
+  <div id="loginNotice"></div>
+</div>
+
+<div class="app" id="app" style="display:none;">
+
+  <div class="masthead">
+    <div>
+      <h1>Mission TAT Gujrat</h1>
+      <div class="tagline">ટેસ્ટ આપો, XP કમાવો, બેજ મેળવો</div>
+    </div>
+    <div class="userchip">
+      <img id="uAvatar" src="" alt="">
+      <div>
+        <div class="uname" id="uName"></div>
+        <span class="badge-pill" id="uBadge"></span>
+      </div>
+      <button class="signout" id="signOutBtn">સાઇન આઉટ</button>
+    </div>
+  </div>
+
+  <nav class="tabs" id="mainTabs">
+    <button data-tab="test" class="active">ટેસ્ટ આપો</button>
+    <button data-tab="mytests">મારા ટેસ્ટ</button>
+    <button data-tab="leaderboard">લીડરબોર્ડ</button>
+    <button data-tab="profile">પ્રોફાઇલ</button>
+    <button data-tab="admin" id="adminTabBtn" style="display:none;">એડમિન</button>
+  </nav>
+
+  <!-- ================= TEST TAB ================= -->
+  <section id="test" class="active">
+    <div class="card" id="testListCard">
+      <h2>ઉપલબ્ધ ટેસ્ટ</h2>
+      <div class="sub">એક ટેસ્ટ પસંદ કરો અને શરૂ કરો.</div>
+      <div id="testListWrap"><div class="empty">લોડ થઈ રહ્યું છે...</div></div>
+    </div>
+
+    <div class="card" id="testTakingCard" style="display:none;">
+      <div class="stat-strip" style="display:flex;gap:18px;margin-bottom:10px;">
+        <div><b id="ttTitle" style="font-family:'Source Serif 4',serif;color:var(--ink-dark);font-size:18px;"></b></div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="ttProgress" style="width:0%;"></div></div>
+      <div id="ttQuestions"></div>
+      <div class="btn-row">
+        <button class="btn" id="submitTestBtn">ટેસ્ટ સબમિટ કરો</button>
+        <button class="btn secondary" id="cancelTestBtn">રદ કરો</button>
+      </div>
+    </div>
+
+    <div class="card" id="testResultCard" style="display:none;">
+      <div class="result-hero">
+        <div class="score" id="resScore"></div>
+        <div class="outof" id="resOutof"></div>
+        <div class="xpgain" id="resXP"></div>
+      </div>
+      <div class="btn-row" style="justify-content:center;">
+        <button class="btn" id="resLeaderboardBtn">લીડરબોર્ડ જુઓ</button>
+        <button class="btn secondary" id="resBackBtn">ટેસ્ટ લિસ્ટ પર જાવ</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= MY TESTS TAB ================= -->
+  <section id="mytests">
+    <div class="card" id="myTestsListCard">
+      <h2>મારા ટેસ્ટ</h2>
+      <div class="sub">તમે લીધેલા બધા ટેસ્ટ — ક્લિક કરીને જવાબ જુઓ.</div>
+      <div id="myTestsWrap"><div class="empty">લોડ થઈ રહ્યું છે...</div></div>
+    </div>
+    <div class="card" id="reviewCard" style="display:none;">
+      <div class="btn-row" style="margin-top:0;">
+        <button class="btn secondary" id="reviewBackBtn">← પાછા જાવ</button>
+        <button class="btn" id="downloadPdfBtn">PDF ડાઉનલોડ કરો</button>
+      </div>
+      <div id="reviewContent"></div>
+    </div>
+  </section>
+
+  <!-- ================= LEADERBOARD TAB ================= -->
+  <section id="leaderboard">
+    <div class="card">
+      <h2>લીડરબોર્ડ</h2>
+      <div class="subtabs">
+        <button data-lb="overall" class="active">ઓવરઓલ (XP)</button>
+        <button data-lb="pertest">ટેસ્ટ પ્રમાણે</button>
+      </div>
+      <div id="lbTestSelectWrap" style="display:none;">
+        <label>ટેસ્ટ પસંદ કરો</label>
+        <select id="lbTestSelect"></select>
+      </div>
+      <div id="lbWrap"><div class="empty">લોડ થઈ રહ્યું છે...</div></div>
+      <div class="btn-row"><button class="btn secondary" id="lbRefreshBtn">રિફ્રેશ કરો</button></div>
+    </div>
+  </section>
+
+  <!-- ================= PROFILE TAB ================= -->
+  <section id="profile">
+    <div class="card">
+      <div class="profile-hero">
+        <img id="pAvatar" src="" alt="">
+        <div>
+          <div class="name" id="pName"></div>
+          <div class="xp" id="pEmail"></div>
+        </div>
+      </div>
+      <div style="margin-top:18px;">
+        <span class="badge-pill" id="pBadge" style="font-size:14px;padding:6px 14px;"></span>
+        <div class="xp" id="pXPText" style="margin-top:10px;"></div>
+        <div class="progress-bar" style="margin-top:8px;"><div class="progress-fill" id="pProgress" style="width:0%;"></div></div>
+        <div class="xp" id="pNextText" style="margin-top:4px;"></div>
+      </div>
+      <div class="stat-strip" style="display:flex;gap:18px;margin-top:20px;">
+        <div class="stat" style="background:#fff;border:1px solid var(--paper-line);border-radius:3px;padding:10px 16px;">
+          <div style="font-family:'Source Serif 4',serif;font-size:22px;color:var(--ink-dark);font-weight:700;" id="pTestsCount">0</div>
+          <div style="font-size:11.5px;color:var(--muted);">ટેસ્ટ લીધા</div>
+        </div>
+        <div class="stat" style="background:#fff;border:1px solid var(--paper-line);border-radius:3px;padding:10px 16px;">
+          <div style="font-family:'Source Serif 4',serif;font-size:22px;color:var(--ink-dark);font-weight:700;" id="pTotalXP">0</div>
+          <div style="font-size:11.5px;color:var(--muted);">કુલ XP</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= ADMIN TAB ================= -->
+  <section id="admin">
+    <div class="card" id="adminGate">
+      <h2>એડમિન લોગિન</h2>
+      <div class="sub">ડેશબોર્ડ અને ટેસ્ટ મેનેજ કરવા માટે પાસવર્ડ નાખો.</div>
+      <input type="password" id="adminPassInput" placeholder="પાસવર્ડ">
+      <div class="btn-row">
+        <button class="btn" id="adminUnlockBtn">અનલોક કરો</button>
+      </div>
+      <div id="adminGateNotice"></div>
+    </div>
+
+    <div id="adminContent" style="display:none;">
+    <div class="subtabs">
+      <button data-admin="create" class="active">ટેસ્ટ બનાવો</button>
+      <button data-admin="manage">ટેસ્ટ મેનેજ કરો</button>
+      <button data-admin="users">યુઝર્સ</button>
+      <button data-admin="submissions">બધા સબમિશન</button>
+    </div>
+
+    <div class="card admin-panel" id="admin-create">
+      <h2>નવો ટેસ્ટ બનાવો</h2>
+      <label>ટેસ્ટનું નામ</label>
+      <input type="text" id="newTestTitle" placeholder="દા.ત. TET 2 - Gujarati - Full Test 1">
+      <label>પ્રશ્નો પેસ્ટ કરો</label>
+      <textarea id="newTestBulk" placeholder="Q) ભારતનું બંધારણ ક્યારે અમલમાં આવ્યું?
+A) 1947
+B) 1950
+C) 1949
+D) 1952
+Ans: B
+Marks: 1
+
+Q) આગળનો પ્રશ્ન...
+A) ...
+B) ...
+C) ...
+D) ...
+Ans: A"></textarea>
+      <div class="helpbox">ફોર્મેટ: Q) પ્રશ્ન → A) B) C) D) વિકલ્પો → Ans: A/B/C/D → Marks: (વૈકલ્પિક, ડિફોલ્ટ 1). દરેક પ્રશ્ન વચ્ચે ખાલી લાઈન રાખો.</div>
+      <div class="btn-row">
+        <button class="btn secondary" id="parsePreviewBtn">પ્રશ્નો ચકાસો</button>
+      </div>
+      <div id="parseNotice"></div>
+      <div id="parsePreviewWrap"></div>
+      <div class="btn-row">
+        <button class="btn" id="saveNewTestBtn" style="display:none;">ટેસ્ટ સેવ કરો (પબ્લિશ કરો)</button>
+      </div>
+      <div id="saveTestNotice"></div>
+    </div>
+
+    <div class="card admin-panel" id="admin-manage" style="display:none;">
+      <h2>ટેસ્ટ મેનેજ કરો</h2>
+      <div id="manageTestsWrap"><div class="empty">લોડ થઈ રહ્યું છે...</div></div>
+      <div class="btn-row"><button class="btn secondary" id="manageRefreshBtn">રિફ્રેશ કરો</button></div>
+    </div>
+
+    <div class="card admin-panel" id="admin-users" style="display:none;">
+      <h2>બધા યુઝર્સ</h2>
+      <div id="usersWrap"><div class="empty">લોડ થઈ રહ્યું છે...</div></div>
+      <div class="btn-row"><button class="btn secondary" id="usersRefreshBtn">રિફ્રેશ કરો</button></div>
+    </div>
+
+    <div class="card admin-panel" id="admin-submissions" style="display:none;">
+      <h2>બધા સબમિશન</h2>
+      <div id="subsWrap"><div class="empty">લોડ થઈ રહ્યું છે...</div></div>
+      <div class="btn-row"><button class="btn secondary" id="subsRefreshBtn">રિફ્રેશ કરો</button></div>
+    </div>
+    </div>
+  </section>
+
+</div>
+
+<div id="printArea"></div>
+
+<script>
+// ================= FIREBASE INIT =================
+const firebaseConfig = {
+  apiKey: "AIzaSyBMyFrnjljHTQfakAjsj69brH-OkzhC4Lc",
+  authDomain: "mission-tat-gujrat-test-app.firebaseapp.com",
+  projectId: "mission-tat-gujrat-test-app",
+  storageBucket: "mission-tat-gujrat-test-app.firebasestorage.app",
+  messagingSenderId: "743194248887",
+  appId: "1:743194248887:web:882c7d539efe681f6c2f32"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+const FieldValue = firebase.firestore.FieldValue;
+
+const ADMIN_EMAILS = ['puremaths26@gmail.com']; // અહીં વધુ admin email ઉમેરી શકાય
+const ADMIN_PASSWORD = '192329192329192329';
+let adminUnlocked = false;
+
+let currentUser = null; // {uid, name, email, photoURL}
+let userDoc = null;     // firestore users/{uid} data
+let isAdmin = false;
+
+let currentTest = null;   // test being taken {id, title, questions:[...], totalMarks}
+let answers = {};
+let allTestsCache = [];
+
+function uid(){ return 'x'+Math.random().toString(36).slice(2)+Date.now().toString(36); }
+function shuffle(arr){ const a=arr.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function esc(s){ const d=document.createElement('div'); d.textContent=s==null?'':String(s); return d.innerHTML; }
+
+// ================= BADGE / XP LOGIC =================
+const TIERS = ['Bronze','Silver','Gold','Platinum','Diamond'];
+const XP_PER_LEVEL = 500;
+const LEVELS_PER_TIER = 5;
+const TIER_SPAN = XP_PER_LEVEL * LEVELS_PER_TIER; // 2500
+
+function computeBadge(xp){
+  xp = xp || 0;
+  if(xp >= TIER_SPAN * TIERS.length){
+    const into = xp - TIER_SPAN*TIERS.length;
+    const legLevel = Math.floor(into / XP_PER_LEVEL) + 1;
+    const xpIntoLevel = into % XP_PER_LEVEL;
+    return { tier:'Legendary', level: legLevel, label: 'Legendary '+legLevel, xpIntoLevel, xpForNext: XP_PER_LEVEL };
+  }
+  const tierIndex = Math.min(Math.floor(xp / TIER_SPAN), TIERS.length-1);
+  const xpIntoTier = xp - tierIndex*TIER_SPAN;
+  const levelIndex = Math.min(Math.floor(xpIntoTier / XP_PER_LEVEL), LEVELS_PER_TIER-1);
+  const xpIntoLevel = xpIntoTier - levelIndex*XP_PER_LEVEL;
+  return { tier: TIERS[tierIndex], level: levelIndex+1, label: TIERS[tierIndex]+' '+(levelIndex+1), xpIntoLevel, xpForNext: XP_PER_LEVEL };
+}
+
+function badgePillHTML(xp, extraStyle){
+  const b = computeBadge(xp);
+  return `<span class="badge-pill tier-${b.tier}" style="${extraStyle||''}">${b.label}</span>`;
+}
+
+// ================= AUTH =================
+document.getElementById('googleSignInBtn').addEventListener('click', async ()=>{
+  const notice = document.getElementById('loginNotice');
+  notice.innerHTML = '';
+  try{
+    const provider = new firebase.auth.GoogleAuthProvider();
+    await auth.signInWithPopup(provider);
+  }catch(e){
+    notice.innerHTML = `<div class="notice err">સાઇન ઇન નિષ્ફળ: ${esc(e.message||e.code||'')}</div>`;
+  }
+});
+
+document.getElementById('signOutBtn').addEventListener('click', ()=>{ auth.signOut(); });
+
+auth.onAuthStateChanged(async (user)=>{
+  if(!user){
+    currentUser = null; userDoc = null; isAdmin = false;
+    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('app').style.display = 'none';
+    return;
+  }
+  currentUser = { uid:user.uid, name:user.displayName||'વપરાશકર્તા', email:user.email||'', photoURL:user.photoURL||'' };
+  isAdmin = ADMIN_EMAILS.includes(currentUser.email);
+
+  const userRef = db.collection('users').doc(currentUser.uid);
+  const snap = await userRef.get();
+  if(!snap.exists){
+    userDoc = { name: currentUser.name, email: currentUser.email, photoURL: currentUser.photoURL, totalXP:0, testsTaken:0, createdAt: FieldValue.serverTimestamp() };
+    await userRef.set(userDoc);
+  }else{
+    userDoc = snap.data();
+    await userRef.update({ name: currentUser.name, photoURL: currentUser.photoURL, lastLogin: FieldValue.serverTimestamp() });
+  }
+
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  document.getElementById('uAvatar').src = currentUser.photoURL;
+  document.getElementById('uName').textContent = currentUser.name;
+  document.getElementById('uBadge').outerHTML = badgePillHTML(userDoc.totalXP).replace('<span','<span id="uBadge"');
+  document.getElementById('adminTabBtn').style.display = isAdmin ? '' : 'none';
+
+  loadTestList();
+  renderProfile();
+});
+
+// ================= TABS =================
+document.getElementById('mainTabs').addEventListener('click', (e)=>{
+  const btn = e.target.closest('button[data-tab]');
+  if(!btn) return;
+  document.querySelectorAll('#mainTabs button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('#app > section').forEach(s=>s.classList.remove('active'));
+  document.getElementById(btn.dataset.tab).classList.add('active');
+  if(btn.dataset.tab==='mytests') loadMyTests();
+  if(btn.dataset.tab==='leaderboard') loadLeaderboardTab();
+  if(btn.dataset.tab==='profile') renderProfile();
+  if(btn.dataset.tab==='admin'){
+    if(adminUnlocked){
+      document.getElementById('adminGate').style.display='none';
+      document.getElementById('adminContent').style.display='block';
+      loadAdminTests();
+    }else{
+      document.getElementById('adminGate').style.display='block';
+      document.getElementById('adminContent').style.display='none';
+    }
+  }
+});
+
+document.getElementById('adminUnlockBtn').addEventListener('click', ()=>{
+  const val = document.getElementById('adminPassInput').value;
+  const notice = document.getElementById('adminGateNotice');
+  if(val === ADMIN_PASSWORD){
+    adminUnlocked = true;
+    document.getElementById('adminGate').style.display='none';
+    document.getElementById('adminContent').style.display='block';
+    document.getElementById('adminPassInput').value='';
+    notice.innerHTML='';
+    loadAdminTests();
+  }else{
+    notice.innerHTML = '<div class="notice err">ખોટો પાસવર્ડ.</div>';
+  }
+});
+
+// ================= TEST LIST / TAKING =================
+async function loadTestList(){
+  const wrap = document.getElementById('testListWrap');
+  try{
+    const q = await db.collection('tests').where('isActive','==',true).get();
+    allTestsCache = [];
+    q.forEach(doc=> allTestsCache.push({ id: doc.id, ...doc.data() }));
+    if(allTestsCache.length===0){ wrap.innerHTML = '<div class="empty">હજુ કોઈ ટેસ્ટ ઉપલબ્ધ નથી.</div>'; return; }
+    wrap.innerHTML = `<div class="testlist">${allTestsCache.map(t=>`
+      <div class="testcard">
+        <h3>${esc(t.title)}</h3>
+        <div class="meta">${(t.questions||[]).length} પ્રશ્નો · ${t.totalMarks||0} ગુણ</div>
+        <button class="btn" data-starttest="${t.id}">ટેસ્ટ આપો</button>
+      </div>`).join('')}</div>`;
+  }catch(e){
+    wrap.innerHTML = `<div class="notice err">ટેસ્ટ લોડ કરવામાં ભૂલ: ${esc(e.message)}</div>`;
+  }
+}
+document.getElementById('testListWrap').addEventListener('click', (e)=>{
+  const btn = e.target.closest('button[data-starttest]');
+  if(!btn) return;
+  const t = allTestsCache.find(x=>x.id===btn.dataset.starttest);
+  if(t) startTest(t);
+});
+
+function startTest(test){
+  currentTest = {
+    id: test.id,
+    title: test.title,
+    totalMarks: test.totalMarks,
+    questions: shuffle((test.questions||[]).map(q=>({
+      id: q.id, text: q.text, marks: q.marks,
+      options: shuffle(q.options.map(o=>({text:o.text, isCorrect: !!o.isCorrect})))
+    })))
+  };
+  answers = {};
+  document.getElementById('testListCard').style.display = 'none';
+  document.getElementById('testResultCard').style.display = 'none';
+  document.getElementById('testTakingCard').style.display = 'block';
+  document.getElementById('ttTitle').textContent = currentTest.title;
+  renderTakingUI();
+}
+
+function renderTakingUI(){
+  const wrap = document.getElementById('ttQuestions');
+  wrap.innerHTML = currentTest.questions.map((q,qi)=>`
+    <div class="qcard">
+      <div class="qhead"><span class="qnum">પ્રશ્ન ${qi+1}</span><span class="qmarks">${q.marks} ગુણ</span></div>
+      <div class="qtext">${esc(q.text)}</div>
+      ${q.options.map((o,oi)=>`
+        <div class="opt ${answers[q.id]===oi?'checked':''}" data-qid="${q.id}" data-oi="${oi}">
+          <span class="bubble">${String.fromCharCode(65+oi)}</span><span>${esc(o.text)}</span>
+        </div>`).join('')}
+    </div>`).join('');
+  const answered = Object.keys(answers).length;
+  document.getElementById('ttProgress').style.width = Math.round(100*answered/currentTest.questions.length)+'%';
+}
+document.getElementById('ttQuestions').addEventListener('click', (e)=>{
+  const opt = e.target.closest('.opt');
+  if(!opt) return;
+  answers[opt.dataset.qid] = parseInt(opt.dataset.oi,10);
+  renderTakingUI();
+});
+document.getElementById('cancelTestBtn').addEventListener('click', ()=>{
+  if(!confirm('ટેસ્ટ રદ કરવો છે? જવાબો ડિલીટ થઈ જશે.')) return;
+  currentTest = null; answers = {};
+  document.getElementById('testTakingCard').style.display = 'none';
+  document.getElementById('testListCard').style.display = 'block';
+});
+
+document.getElementById('submitTestBtn').addEventListener('click', async ()=>{
+  if(!currentTest) return;
+  if(!confirm('ટેસ્ટ સબમિટ કરવો છે?')) return;
+  let correct=0, wrong=0, skipped=0, score=0;
+  const answerDetails = currentTest.questions.map(q=>{
+    const selIdx = answers[q.id];
+    const correctIdx = q.options.findIndex(o=>o.isCorrect);
+    let status = 'skipped';
+    if(selIdx===undefined || selIdx===null){ skipped++; }
+    else if(selIdx===correctIdx){ correct++; score+=q.marks; status='correct'; }
+    else{ wrong++; status='wrong'; }
+    return { text:q.text, marks:q.marks, options:q.options, selectedIndex: selIdx===undefined?null:selIdx, correctIndex: correctIdx, status };
+  });
+
+  const btn = document.getElementById('submitTestBtn');
+  btn.disabled = true; btn.textContent = 'સેવ થઈ રહ્યું છે...';
+  try{
+    await db.collection('submissions').add({
+      uid: currentUser.uid, name: currentUser.name, email: currentUser.email,
+      testId: currentTest.id, testTitle: currentTest.title,
+      score, total: currentTest.totalMarks, correct, wrong, skipped,
+      answers: answerDetails,
+      date: FieldValue.serverTimestamp()
+    });
+    await db.collection('users').doc(currentUser.uid).update({
+      totalXP: FieldValue.increment(100),
+      testsTaken: FieldValue.increment(1)
+    });
+    userDoc.totalXP = (userDoc.totalXP||0) + 100;
+    userDoc.testsTaken = (userDoc.testsTaken||0) + 1;
+    document.getElementById('uBadge').outerHTML = badgePillHTML(userDoc.totalXP).replace('<span','<span id="uBadge"');
+
+    document.getElementById('testTakingCard').style.display = 'none';
+    document.getElementById('testResultCard').style.display = 'block';
+    document.getElementById('resScore').textContent = score;
+    document.getElementById('resOutof').textContent = 'કુલ '+currentTest.totalMarks+' માંથી ('+correct+' સાચા, '+wrong+' ખોટા, '+skipped+' છોડેલા)';
+    document.getElementById('resXP').textContent = '+100 XP મળ્યા! ('+badgePillHTMLplain(userDoc.totalXP)+')';
+  }catch(e){
+    alert('સેવ કરવામાં ભૂલ: '+e.message);
+  }
+  btn.disabled = false; btn.textContent = 'ટેસ્ટ સબમિટ કરો';
+});
+function badgePillHTMLplain(xp){ return computeBadge(xp).label; }
+
+document.getElementById('resBackBtn').addEventListener('click', ()=>{
+  currentTest = null; answers = {};
+  document.getElementById('testResultCard').style.display = 'none';
+  document.getElementById('testListCard').style.display = 'block';
+  loadTestList();
+});
+document.getElementById('resLeaderboardBtn').addEventListener('click', ()=>{
+  document.querySelector('#mainTabs button[data-tab=leaderboard]').click();
+});
+
+// ================= MY TESTS =================
+async function loadMyTests(){
+  const wrap = document.getElementById('myTestsWrap');
+  document.getElementById('myTestsListCard').style.display = 'block';
+  document.getElementById('reviewCard').style.display = 'none';
+  wrap.innerHTML = '<div class="empty">લોડ થઈ રહ્યું છે...</div>';
+  try{
+    const q = await db.collection('submissions').where('uid','==',currentUser.uid).get();
+    const subs = [];
+    q.forEach(doc=> subs.push({ id: doc.id, ...doc.data() }));
+    subs.sort((a,b)=> (b.date?.seconds||0) - (a.date?.seconds||0));
+    if(subs.length===0){ wrap.innerHTML = '<div class="empty">તમે હજુ કોઈ ટેસ્ટ લીધો નથી.</div>'; return; }
+    wrap.innerHTML = `<table class="datatable"><thead><tr><th>ટેસ્ટ</th><th>સ્કોર</th><th>તારીખ</th><th></th></tr></thead><tbody>
+      ${subs.map(s=>`<tr>
+        <td>${esc(s.testTitle)}</td>
+        <td>${s.score}/${s.total}</td>
+        <td>${s.date? new Date(s.date.seconds*1000).toLocaleDateString('en-GB') : '-'}</td>
+        <td><button class="btn secondary" data-review="${s.id}">જવાબ જુઓ</button></td>
+      </tr>`).join('')}
+    </tbody></table>`;
+    wrap._subsCache = subs;
+    window._mySubsCache = subs;
+  }catch(e){
+    wrap.innerHTML = `<div class="notice err">લોડ કરવામાં ભૂલ: ${esc(e.message)}</div>`;
+  }
+}
+document.getElementById('myTestsWrap').addEventListener('click', (e)=>{
+  const btn = e.target.closest('button[data-review]');
+  if(!btn) return;
+  const sub = (window._mySubsCache||[]).find(s=>s.id===btn.dataset.review);
+  if(sub) renderReview(sub);
+});
+function renderReview(sub){
+  document.getElementById('myTestsListCard').style.display = 'none';
+  document.getElementById('reviewCard').style.display = 'block';
+  window._activeReview = sub;
+  const html = `
+    <div class="card" style="margin-top:14px;">
+      <h2>${esc(sub.testTitle)}</h2>
+      <div class="sub">સ્કોર: ${sub.score}/${sub.total} — ${sub.correct} સાચા, ${sub.wrong} ખોટા, ${sub.skipped} છોડેલા</div>
+    </div>
+    ${sub.answers.map((a,i)=>`
+      <div class="qcard">
+        <div class="qhead"><span class="qnum">પ્રશ્ન ${i+1}</span><span class="qmarks">${a.marks} ગુણ</span></div>
+        <div class="qtext">${esc(a.text)}</div>
+        ${a.options.map((o,oi)=>{
+          let cls='opt';
+          if(oi===a.correctIndex) cls+=' correct';
+          else if(oi===a.selectedIndex) cls+=' wrong';
+          return `<div class="${cls}"><span class="bubble">${String.fromCharCode(65+oi)}</span><span>${esc(o.text)}</span></div>`;
+        }).join('')}
+      </div>`).join('')}
+  `;
+  document.getElementById('reviewContent').innerHTML = html;
+}
+document.getElementById('reviewBackBtn').addEventListener('click', ()=>{
+  document.getElementById('reviewCard').style.display = 'none';
+  document.getElementById('myTestsListCard').style.display = 'block';
+});
+document.getElementById('downloadPdfBtn').addEventListener('click', ()=>{
+  const sub = window._activeReview;
+  if(!sub) return;
+  const printArea = document.getElementById('printArea');
+  printArea.innerHTML = `
+    <div style="font-family:'Noto Sans Gujarati',sans-serif;padding:20px;">
+      <h1 style="font-size:22px;">${esc(sub.testTitle)}</h1>
+      <p><b>નામ:</b> ${esc(sub.name)} &nbsp; <b>સ્કોર:</b> ${sub.score}/${sub.total} &nbsp; (${sub.correct} સાચા, ${sub.wrong} ખોટા, ${sub.skipped} છોડેલા)</p>
+      <hr>
+      ${sub.answers.map((a,i)=>`
+        <div style="margin-bottom:14px;">
+          <div style="font-weight:700;">${i+1}. ${esc(a.text)} <span style="font-weight:400;font-size:12px;color:#777;">(${a.marks} ગુણ)</span></div>
+          ${a.options.map((o,oi)=>{
+            let style='padding:3px 0;';
+            let mark='';
+            if(oi===a.correctIndex){ style+='color:#2E7D32;font-weight:600;'; mark=' ✓ (સાચો જવાબ)'; }
+            else if(oi===a.selectedIndex){ style+='color:#C62828;font-weight:600;'; mark=' ✗ (તમારો જવાબ)'; }
+            return `<div style="${style}">${String.fromCharCode(65+oi)}) ${esc(o.text)}${mark}</div>`;
+          }).join('')}
+        </div>`).join('')}
+    </div>`;
+  window.print();
+});
+
+// ================= LEADERBOARD =================
+document.querySelector('#leaderboard .subtabs').addEventListener('click', (e)=>{
+  const btn = e.target.closest('button[data-lb]');
+  if(!btn) return;
+  document.querySelectorAll('#leaderboard .subtabs button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('lbTestSelectWrap').style.display = btn.dataset.lb==='pertest' ? 'block' : 'none';
+  loadLeaderboardTab();
+});
+document.getElementById('lbRefreshBtn').addEventListener('click', loadLeaderboardTab);
+document.getElementById('lbTestSelect').addEventListener('change', loadLeaderboardTab);
+
+async function loadLeaderboardTab(){
+  const mode = document.querySelector('#leaderboard .subtabs button.active').dataset.lb;
+  const wrap = document.getElementById('lbWrap');
+  wrap.innerHTML = '<div class="empty">લોડ થઈ રહ્યું છે...</div>';
+
+  if(mode==='pertest'){
+    const sel = document.getElementById('lbTestSelect');
+    if(sel.options.length===0){
+      try{
+        const q = await db.collection('tests').get();
+        const tests = []; q.forEach(d=>tests.push({id:d.id, title:d.data().title}));
+        sel.innerHTML = tests.map(t=>`<option value="${t.id}">${esc(t.title)}</option>`).join('');
+      }catch(e){ wrap.innerHTML = `<div class="notice err">${esc(e.message)}</div>`; return; }
+    }
+    const testId = sel.value;
+    if(!testId){ wrap.innerHTML = '<div class="empty">કોઈ ટેસ્ટ નથી.</div>'; return; }
+    try{
+      const q = await db.collection('submissions').where('testId','==',testId).get();
+      const rows = []; q.forEach(d=>rows.push(d.data()));
+      rows.sort((a,b)=> b.score-a.score);
+      renderLbTable(wrap, rows.map(r=>({name:r.name, xp: null, scoreText: r.score+'/'+r.total})), 'score');
+    }catch(e){ wrap.innerHTML = `<div class="notice err">${esc(e.message)}</div>`; }
+  }else{
+    try{
+      const q = await db.collection('users').orderBy('totalXP','desc').limit(100).get();
+      const rows = []; q.forEach(d=>rows.push(d.data()));
+      renderLbTable(wrap, rows.map(r=>({name:r.name, xp:r.totalXP||0, scoreText: (r.totalXP||0)+' XP'})), 'xp');
+    }catch(e){ wrap.innerHTML = `<div class="notice err">${esc(e.message)}</div>`; }
+  }
+}
+function renderLbTable(wrap, rows, mode){
+  if(rows.length===0){ wrap.innerHTML = '<div class="empty">હજુ કોઈ ડેટા નથી.</div>'; return; }
+  wrap.innerHTML = `<table class="datatable"><thead><tr><th>ક્રમ</th><th>નામ</th><th>${mode==='xp'?'બેજ':''}</th><th>${mode==='xp'?'XP':'સ્કોર'}</th></tr></thead><tbody>
+    ${rows.map((r,i)=>`<tr>
+      <td><span class="rank-badge ${i===0?'r1':i===1?'r2':i===2?'r3':''}">${i+1}</span></td>
+      <td>${esc(r.name)}</td>
+      <td>${mode==='xp'? badgePillHTML(r.xp) : ''}</td>
+      <td>${esc(r.scoreText)}</td>
+    </tr>`).join('')}
+  </tbody></table>`;
+}
+
+// ================= PROFILE =================
+function renderProfile(){
+  if(!currentUser || !userDoc) return;
+  document.getElementById('pAvatar').src = currentUser.photoURL;
+  document.getElementById('pName').textContent = currentUser.name;
+  document.getElementById('pEmail').textContent = currentUser.email;
+  const b = computeBadge(userDoc.totalXP||0);
+  document.getElementById('pBadge').outerHTML = `<span class="badge-pill tier-${b.tier}" id="pBadge" style="font-size:14px;padding:6px 14px;">${b.label}</span>`;
+  document.getElementById('pXPText').textContent = 'કુલ XP: '+(userDoc.totalXP||0);
+  document.getElementById('pProgress').style.width = Math.round(100*b.xpIntoLevel/b.xpForNext)+'%';
+  document.getElementById('pNextText').textContent = `આગલા લેવલ સુધી: ${b.xpForNext-b.xpIntoLevel} XP બાકી`;
+  document.getElementById('pTestsCount').textContent = userDoc.testsTaken||0;
+  document.getElementById('pTotalXP').textContent = userDoc.totalXP||0;
+}
+
+// ================= ADMIN =================
+document.querySelector('#admin .subtabs').addEventListener('click', (e)=>{
+  const btn = e.target.closest('button[data-admin]');
+  if(!btn) return;
+  document.querySelectorAll('#admin .subtabs button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.admin-panel').forEach(p=>p.style.display='none');
+  document.getElementById('admin-'+btn.dataset.admin).style.display = 'block';
+  if(btn.dataset.admin==='manage') loadAdminTests();
+  if(btn.dataset.admin==='users') loadAdminUsers();
+  if(btn.dataset.admin==='submissions') loadAdminSubmissions();
+});
+
+function parseBulkQuestions(text){
+  const blocks = text.split(/\n\s*\n/).map(b=>b.trim()).filter(Boolean);
+  const questions = []; const errors = []; const failedRaw = [];
+  blocks.forEach((block, bi)=>{
+    const lines = block.split('\n').map(l=>l.trim()).filter(Boolean);
+    let qText=null, opts=[], ansLetter=null, marks=1;
+    lines.forEach(line=>{
+      let m;
+      if(m = line.match(/^Q[):.]?\s*(.+)$/i)) qText = m[1];
+      else if(m = line.match(/^([A-D])[):.]\s*(.+)$/i)) opts[m[1].toUpperCase().charCodeAt(0)-65] = m[2];
+      else if(m = line.match(/^Ans(?:wer)?\s*[:.]?\s*([A-D])/i)) ansLetter = m[1].toUpperCase();
+      else if(m = line.match(/^Marks?\s*[:.]?\s*(\d+)/i)) marks = parseInt(m[1],10);
+    });
+    if(!qText || opts.filter(Boolean).length<2 || !ansLetter){
+      errors.push(`બ્લોક ${bi+1}: અધૂરો અથવા ખોટા ફોર્મેટમાં પ્રશ્ન — છોડી દેવાયો.`);
+      failedRaw.push(block);
+      return;
+    }
+    questions.push({
+      id: uid(), text: qText, marks: marks||1,
+      options: opts.map((o,i)=>({ text:o||'', isCorrect: i===(ansLetter.charCodeAt(0)-65) }))
+    });
+  });
+  return {questions, errors, failedRaw};
+}
+
+let parsedForSave = null;
+document.getElementById('parsePreviewBtn').addEventListener('click', ()=>{
+  const text = document.getElementById('newTestBulk').value;
+  const {questions, errors} = parseBulkQuestions(text);
+  const notice = document.getElementById('parseNotice');
+  const previewWrap = document.getElementById('parsePreviewWrap');
+  if(questions.length===0){
+    notice.innerHTML = '<div class="notice err">કોઈ પ્રશ્ન ઓળખાયો નહીં. ફોર્મેટ ચકાસો.</div>';
+    document.getElementById('saveNewTestBtn').style.display = 'none';
+    previewWrap.innerHTML=''; parsedForSave = null;
+    return;
+  }
+  parsedForSave = questions;
+  notice.innerHTML = `<div class="notice ok">${questions.length} પ્રશ્નો મળ્યા${errors.length? ', '+errors.length+' બ્લોક છોડી દેવાયા':''}.</div>`;
+  previewWrap.innerHTML = `<div class="helpbox" style="max-height:220px;overflow:auto;">${questions.map((q,i)=>`${i+1}. ${esc(q.text)} — સાચો: ${esc(q.options.find(o=>o.isCorrect).text)}`).join('\n')}</div>`;
+  document.getElementById('saveNewTestBtn').style.display = 'inline-block';
+});
+
+document.getElementById('saveNewTestBtn').addEventListener('click', async ()=>{
+  if(!parsedForSave || parsedForSave.length===0) return;
+  const title = document.getElementById('newTestTitle').value.trim();
+  const notice = document.getElementById('saveTestNotice');
+  if(!title){ notice.innerHTML = '<div class="notice warn">ટેસ્ટનું નામ લખો.</div>'; return; }
+  const totalMarks = parsedForSave.reduce((s,q)=>s+q.marks,0);
+  try{
+    await db.collection('tests').add({
+      title, questions: parsedForSave, totalMarks, isActive: true,
+      createdBy: currentUser.email, createdAt: FieldValue.serverTimestamp()
+    });
+    notice.innerHTML = '<div class="notice ok">ટેસ્ટ સેવ અને પબ્લિશ થયો! "ટેસ્ટ આપો" ટેબમાં હવે દેખાશે.</div>';
+    document.getElementById('newTestTitle').value = '';
+    document.getElementById('newTestBulk').value = '';
+    document.getElementById('parsePreviewWrap').innerHTML = '';
+    document.getElementById('parseNotice').innerHTML = '';
+    document.getElementById('saveNewTestBtn').style.display = 'none';
+    parsedForSave = null;
+    loadTestList();
+  }catch(e){
+    notice.innerHTML = `<div class="notice err">સેવ કરવામાં ભૂલ: ${esc(e.message)}</div>`;
+  }
+});
+
+async function loadAdminTests(){
+  const wrap = document.getElementById('manageTestsWrap');
+  wrap.innerHTML = '<div class="empty">લોડ થઈ રહ્યું છે...</div>';
+  try{
+    const q = await db.collection('tests').get();
+    const tests = []; q.forEach(d=>tests.push({id:d.id, ...d.data()}));
+    if(tests.length===0){ wrap.innerHTML = '<div class="empty">કોઈ ટેસ્ટ નથી.</div>'; return; }
+    wrap.innerHTML = `<table class="datatable"><thead><tr><th>ટેસ્ટ</th><th>પ્રશ્નો</th><th>સ્ટેટસ</th><th></th></tr></thead><tbody>
+      ${tests.map(t=>`<tr>
+        <td>${esc(t.title)}</td>
+        <td>${(t.questions||[]).length}</td>
+        <td>${t.isActive?'✅ Active':'⏸ Inactive'}</td>
+        <td>
+          <button class="btn secondary" data-toggle="${t.id}" data-cur="${t.isActive}">${t.isActive?'નિષ્ક્રિય કરો':'સક્રિય કરો'}</button>
+          <button class="btn danger" data-del="${t.id}">ડિલીટ</button>
+        </td>
+      </tr>`).join('')}
+    </tbody></table>`;
+  }catch(e){ wrap.innerHTML = `<div class="notice err">${esc(e.message)}</div>`; }
+}
+document.getElementById('manageRefreshBtn').addEventListener('click', loadAdminTests);
+document.getElementById('manageTestsWrap').addEventListener('click', async (e)=>{
+  const toggleBtn = e.target.closest('button[data-toggle]');
+  const delBtn = e.target.closest('button[data-del]');
+  if(toggleBtn){
+    const cur = toggleBtn.dataset.cur === 'true';
+    await db.collection('tests').doc(toggleBtn.dataset.toggle).update({ isActive: !cur });
+    loadAdminTests(); loadTestList();
+  }
+  if(delBtn){
+    if(!confirm('આ ટેસ્ટ કાયમ માટે ડિલીટ કરવો છે?')) return;
+    await db.collection('tests').doc(delBtn.dataset.del).delete();
+    loadAdminTests(); loadTestList();
+  }
+});
+
+async function loadAdminUsers(){
+  const wrap = document.getElementById('usersWrap');
+  wrap.innerHTML = '<div class="empty">લોડ થઈ રહ્યું છે...</div>';
+  try{
+    const q = await db.collection('users').orderBy('totalXP','desc').get();
+    const users = []; q.forEach(d=>users.push(d.data()));
+    if(users.length===0){ wrap.innerHTML = '<div class="empty">કોઈ યુઝર નથી.</div>'; return; }
+    wrap.innerHTML = `<table class="datatable"><thead><tr><th>નામ</th><th>ઈમેલ</th><th>બેજ</th><th>XP</th><th>ટેસ્ટ લીધા</th></tr></thead><tbody>
+      ${users.map(u=>`<tr>
+        <td>${esc(u.name)}</td><td>${esc(u.email)}</td>
+        <td>${badgePillHTML(u.totalXP||0)}</td>
+        <td>${u.totalXP||0}</td><td>${u.testsTaken||0}</td>
+      </tr>`).join('')}
+    </tbody></table>`;
+  }catch(e){ wrap.innerHTML = `<div class="notice err">${esc(e.message)}</div>`; }
+}
+document.getElementById('usersRefreshBtn').addEventListener('click', loadAdminUsers);
+
+async function loadAdminSubmissions(){
+  const wrap = document.getElementById('subsWrap');
+  wrap.innerHTML = '<div class="empty">લોડ થઈ રહ્યું છે...</div>';
+  try{
+    const q = await db.collection('submissions').orderBy('date','desc').limit(200).get();
+    const subs = []; q.forEach(d=>subs.push(d.data()));
+    if(subs.length===0){ wrap.innerHTML = '<div class="empty">કોઈ સબમિશન નથી.</div>'; return; }
+    wrap.innerHTML = `<table class="datatable"><thead><tr><th>નામ</th><th>ટેસ્ટ</th><th>સ્કોર</th><th>તારીખ</th></tr></thead><tbody>
+      ${subs.map(s=>`<tr>
+        <td>${esc(s.name)}</td><td>${esc(s.testTitle)}</td><td>${s.score}/${s.total}</td>
+        <td>${s.date? new Date(s.date.seconds*1000).toLocaleString('en-GB') : '-'}</td>
+      </tr>`).join('')}
+    </tbody></table>`;
+  }catch(e){ wrap.innerHTML = `<div class="notice err">${esc(e.message)}</div>`; }
+}
+document.getElementById('subsRefreshBtn').addEventListener('click', loadAdminSubmissions);
+</script>
+</body>
+</html>
