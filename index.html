@@ -191,9 +191,27 @@
     #printArea{display:block !important;}
   }
   @media (max-width:600px){ .masthead{flex-direction:column;align-items:flex-start;} nav.tabs{overflow-x:auto;} }
+  #splashScreen{position:fixed;inset:0;background:#000;z-index:9999;display:flex;align-items:center;justify-content:center;transition:opacity .6s ease;}
+  #splashScreen.hide{opacity:0;pointer-events:none;}
+  #splashScreen h1{
+    font-family:'Source Serif 4',serif;font-weight:700;
+    font-size:clamp(30px,8vw,68px);letter-spacing:0.06em;
+    color:#E50914;text-transform:uppercase;margin:0;text-align:center;
+    text-shadow:0 0 50px rgba(229,9,20,0.65),0 0 12px rgba(229,9,20,0.9);
+    animation:splashIn 2.1s cubic-bezier(.2,.8,.2,1) forwards;
+  }
+  @keyframes splashIn{
+    0%{transform:scale(2.4);opacity:0;letter-spacing:0.35em;filter:blur(8px);}
+    32%{opacity:1;filter:blur(0);}
+    55%{transform:scale(1.06);}
+    72%{transform:scale(1);letter-spacing:0.06em;}
+    100%{transform:scale(1);}
+  }
 </style>
 </head>
 <body>
+
+<div id="splashScreen"><h1>Mission TAT Gujrat</h1></div>
 
 <div id="loginScreen">
   <div class="hero">
@@ -433,19 +451,23 @@
         </div>
       </div>
 
-      <label>હાલની બેંકો (ક્લિક કરીને પસંદ કરો)</label>
+      <label>હાલની બેંકો (ક્લિક કરીને પસંદ કરો, ✕ થી ડિલીટ કરો)</label>
       <div class="bank-list" id="bankChipList" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;"></div>
 
-      <div id="addQCard" style="display:none;margin-top:16px;">
-        <h2 style="font-size:16px;">પ્રશ્નો ઉમેરો — <span id="activeBankLabel" style="color:var(--teal)"></span></h2>
-        <label>ફાઈલ અપલોડ કરો (PDF / DOCX / TXT)</label>
+      <div style="margin-top:20px;">
+        <h2 style="font-size:16px;">ફાઈલમાંથી નવી બેંક(ઓ) બનાવો</h2>
+        <div class="sub" style="margin-bottom:8px;">દરેક ફાઈલમાંથી આપોઆપ એક અલગ બેંક બનશે (ફાઈલના નામ પરથી) — બેંકો ક્યારેય ભેગી નહીં થાય, અલગ-અલગ subject માટે નિરાંતે એકસાથે ઘણી ફાઈલો પસંદ કરી શકાય.</div>
+        <label>ફાઈલ અપલોડ કરો (PDF / DOCX / TXT) — એકસાથે ઘણી પસંદ કરી શકાય</label>
         <input type="file" id="fileInput" accept=".pdf,.docx,.txt,.md" multiple>
-        <div class="btn-row"><button class="btn secondary" id="importFileBtn">ફાઈલમાંથી પ્રશ્નો કાઢો</button></div>
+        <div class="btn-row"><button class="btn secondary" id="importFileBtn">ફાઈલ(ઓ)માંથી નવી બેંક(ઓ) બનાવો</button></div>
         <div id="importProgress"></div>
         <div id="importNotice"></div>
         <div id="failedBlocksWrap"></div>
+      </div>
 
-        <label>અથવા સીધા ટેક્સ્ટ પેસ્ટ કરો</label>
+      <div id="addQCard" style="display:none;margin-top:20px;border-top:1px solid var(--paper-line);padding-top:16px;">
+        <h2 style="font-size:16px;">ટેક્સ્ટ પેસ્ટ કરીને ઉમેરો — <span id="activeBankLabel" style="color:var(--teal)"></span></h2>
+        <label>પ્રશ્નો પેસ્ટ કરો</label>
         <textarea id="bulkInput" placeholder="Q) ભારતનું બંધારણ ક્યારે અમલમાં આવ્યું?
 A) 1947
 B) 1950
@@ -453,7 +475,7 @@ C) 1949
 D) 1952
 Ans: B
 Marks: 1"></textarea>
-        <div class="helpbox">ફોર્મેટ: Q) પ્રશ્ન → A) B) C) D) વિકલ્પો → Ans: A/B/C/D → Marks: (વૈકલ્પિક). દરેક પ્રશ્ન વચ્ચે ખાલી લાઈન રાખો. ફાઈલમાંથી કાઢતી વખતે "1. પ્રશ્ન" + (A)(B)(C)(D) + "Ans/જવાબ: B" જેવા ફોર્મેટ પણ આપોઆપ ઓળખાય છે.</div>
+        <div class="helpbox">ફોર્મેટ: Q) પ્રશ્ન → A) B) C) D) વિકલ્પો → Ans: A/B/C/D → Marks: (વૈકલ્પિક). દરેક પ્રશ્ન વચ્ચે ખાલી લાઈન રાખો.</div>
         <div class="btn-row">
           <button class="btn" id="parseAddBtn">બેંકમાં ઉમેરો</button>
           <button class="btn secondary" id="clearBulkBtn">ટેક્સ્ટ સાફ કરો</button>
@@ -533,10 +555,14 @@ const FieldValue = firebase.firestore.FieldValue;
 
 const ADMIN_EMAILS = ['puremaths26@gmail.com']; // અહીં વધુ admin email ઉમેરી શકાય
 const ADMIN_PASSWORD = '192329192329192329';
-const PAYMENT_LINK = 'https://rzp.io/rzp/VsjPgKl'; // ⚠️ અહીં તમારી Razorpay Payment Link ની URL મૂકો
+const PAYMENT_LINK = 'https://rzp.io/l/YOUR-PAYMENT-LINK'; // ⚠️ અહીં તમારી Razorpay Payment Link ની URL મૂકો
 const PRICE_LABEL = '₹99'; // ⚠️ અહીં તમારી ખરી કિંમત લખો
 let adminUnlocked = false;
 document.getElementById('priceAmountLanding').textContent = PRICE_LABEL;
+setTimeout(()=>{
+  const s = document.getElementById('splashScreen');
+  if(s){ s.classList.add('hide'); setTimeout(()=>{ s.style.display='none'; }, 650); }
+}, 2100);
 
 let currentUser = null; // {uid, name, email, photoURL}
 let userDoc = null;     // firestore users/{uid} data
@@ -976,7 +1002,7 @@ async function loadBanks(force){
   try{
     const q = await db.collection('banks').get();
     banks = {};
-    q.forEach(doc=>{ banks[doc.id] = doc.data(); });
+    q.forEach(doc=>{ const d=doc.data(); banks[doc.id] = { name:d.name, questionCount:d.questionCount||0 }; });
     banksLoaded = true;
     renderBankChips();
     renderGenBankList();
@@ -988,13 +1014,15 @@ async function loadBanks(force){
 function renderBankChips(){
   const wrap = document.getElementById('bankChipList');
   const ids = Object.keys(banks);
-  if(ids.length===0){ wrap.innerHTML = '<span style="color:var(--muted);font-size:13px;">હજુ કોઈ બેંક નથી — ઉપર નામ લખીને બનાવો.</span>'; return; }
+  if(ids.length===0){ wrap.innerHTML = '<span style="color:var(--muted);font-size:13px;">હજુ કોઈ બેંક નથી — ઉપર નામ લખીને બનાવો અથવા ફાઈલ અપલોડ કરો.</span>'; return; }
   wrap.innerHTML = ids.map(id=>`
-    <div class="bank-chip ${activeBank===id?'selected':''}" data-id="${id}" style="cursor:pointer;display:flex;align-items:center;gap:8px;border:1px solid var(--paper-line);background:#FFFEFB;border-radius:20px;padding:6px 12px;font-size:13.5px;${activeBank===id?'border-color:var(--teal);background:#EAF5F3;':''}">
-      <span>${esc(banks[id].name)}</span><span style="color:var(--muted);font-size:12px;">${(banks[id].questions||[]).length} પ્રશ્નો</span>
+    <div class="bank-chip" data-id="${id}" style="cursor:pointer;display:flex;align-items:center;gap:8px;border:1px solid var(--paper-line);background:#FFFEFB;border-radius:20px;padding:6px 6px 6px 12px;font-size:13.5px;${activeBank===id?'border-color:var(--teal);background:#EAF5F3;':''}">
+      <span>${esc(banks[id].name)}</span><span style="color:var(--muted);font-size:12px;">${banks[id].questionCount||0} પ્રશ્નો</span>
+      <button class="bank-del-btn" data-delid="${id}" title="બેંક ડિલીટ કરો" style="border:none;background:none;color:var(--red);cursor:pointer;font-size:15px;line-height:1;padding:2px 6px;">✕</button>
     </div>`).join('');
   wrap.querySelectorAll('.bank-chip').forEach(chip=>{
-    chip.addEventListener('click', ()=>{
+    chip.addEventListener('click', (e)=>{
+      if(e.target.closest('.bank-del-btn')) return;
       activeBank = chip.dataset.id;
       document.getElementById('addQCard').style.display = 'block';
       document.getElementById('activeBankLabel').textContent = banks[activeBank].name;
@@ -1002,14 +1030,51 @@ function renderBankChips(){
       renderBankPreview();
     });
   });
+  wrap.querySelectorAll('.bank-del-btn').forEach(btn=>{
+    btn.addEventListener('click', async (e)=>{
+      e.stopPropagation();
+      const id = btn.dataset.delid;
+      const name = banks[id].name;
+      if(!confirm(`"${name}" બેંક કાયમ માટે ડિલીટ કરવી છે? આમાંના બધા પ્રશ્નો પણ ડિલીટ થઈ જશે.`)) return;
+      btn.textContent = '…';
+      try{
+        await deleteBank(id);
+        renderBankChips(); renderGenBankList(); renderBankPreview();
+      }catch(err){ alert('ડિલીટ કરવામાં ભૂલ: '+err.message); }
+    });
+  });
 }
 
-function renderBankPreview(){
+async function deleteBank(bankId){
+  const colRef = db.collection('banks').doc(bankId).collection('questions');
+  let snap = await colRef.limit(400).get();
+  while(!snap.empty){
+    const batch = db.batch();
+    snap.forEach(d=>batch.delete(d.ref));
+    await batch.commit();
+    snap = await colRef.limit(400).get();
+  }
+  await db.collection('banks').doc(bankId).delete();
+  delete banks[bankId];
+  genSelected.delete(bankId);
+  if(activeBank===bankId){
+    activeBank = null;
+    document.getElementById('addQCard').style.display = 'none';
+  }
+}
+
+async function renderBankPreview(){
   const wrap = document.getElementById('bankPreview');
   if(!activeBank || !banks[activeBank]){ wrap.innerHTML=''; return; }
-  const qs = banks[activeBank].questions||[];
-  if(qs.length===0){ wrap.innerHTML = '<div style="color:var(--muted);font-size:13px;">આ બેંકમાં હજુ કોઈ પ્રશ્ન નથી.</div>'; return; }
-  wrap.innerHTML = qs.map((q,i)=>`<div class="qrow" style="padding:8px 0;border-bottom:1px dashed var(--paper-line);font-size:13.5px;"><b style="color:var(--ink-dark);">${i+1}. ${esc(q.text)}</b><div style="color:var(--green);font-weight:600;">સાચો: ${esc(q.options[q.correct]||'')}</div></div>`).join('');
+  wrap.innerHTML = '<div style="color:var(--muted);font-size:13px;">લોડ થઈ રહ્યું છે...</div>';
+  try{
+    const snap = await db.collection('banks').doc(activeBank).collection('questions').limit(100).get();
+    const qs = []; snap.forEach(d=>qs.push(d.data()));
+    if(qs.length===0){ wrap.innerHTML = '<div style="color:var(--muted);font-size:13px;">આ બેંકમાં હજુ કોઈ પ્રશ્ન નથી.</div>'; return; }
+    const total = banks[activeBank].questionCount || qs.length;
+    const note = total>qs.length ? `<div style="font-size:12px;color:var(--muted);margin-bottom:8px;">કુલ ${total} માંથી પહેલા ${qs.length} બતાવ્યા છે</div>` : '';
+    wrap.innerHTML = note + qs.map((q,i)=>`<div class="qrow" style="padding:8px 0;border-bottom:1px dashed var(--paper-line);font-size:13.5px;"><b style="color:var(--ink-dark);">${i+1}. ${esc(q.text)}</b><div style="color:var(--green);font-weight:600;">સાચો: ${esc(q.options[q.correct]||'')}</div></div>`).join('');
+  }catch(e){ wrap.innerHTML = `<div class="notice err">${esc(e.message)}</div>`; }
 }
 
 document.getElementById('createBankBtn').addEventListener('click', async ()=>{
@@ -1017,8 +1082,8 @@ document.getElementById('createBankBtn').addEventListener('click', async ()=>{
   const name = nameInput.value.trim();
   if(!name) return;
   try{
-    const ref = await db.collection('banks').add({ name, questions: [], createdAt: FieldValue.serverTimestamp() });
-    banks[ref.id] = { name, questions: [] };
+    const ref = await db.collection('banks').add({ name, questionCount: 0, createdAt: FieldValue.serverTimestamp() });
+    banks[ref.id] = { name, questionCount: 0 };
     activeBank = ref.id;
     nameInput.value = '';
     document.getElementById('addQCard').style.display = 'block';
@@ -1029,8 +1094,23 @@ document.getElementById('createBankBtn').addEventListener('click', async ()=>{
   }
 });
 
-async function saveBank(bankId){
-  await db.collection('banks').doc(bankId).update({ questions: banks[bankId].questions, updatedAt: FieldValue.serverTimestamp() });
+// દરેક પ્રશ્ન એક અલગ નાનું document — Firestore ની 1MB/document મર્યાદા ક્યારેય ના નડે.
+// 500 ops/batch ની મર્યાદાથી નીચે રહેવા 400-400 ના ટુકડામાં લખીએ છીએ.
+async function addQuestionsToBank(bankId, questions){
+  const colRef = db.collection('banks').doc(bankId).collection('questions');
+  let i = 0;
+  while(i < questions.length){
+    const chunk = questions.slice(i, i+400);
+    const batch = db.batch();
+    chunk.forEach(q=>{
+      const ref = colRef.doc();
+      batch.set(ref, { text:q.text, options:q.options, correct:q.correct, marks:q.marks||1 });
+    });
+    await batch.commit();
+    i += 400;
+  }
+  await db.collection('banks').doc(bankId).update({ questionCount: FieldValue.increment(questions.length) });
+  banks[bankId].questionCount = (banks[bankId].questionCount||0) + questions.length;
 }
 
 function parseBulkQuestions(text){
@@ -1067,8 +1147,8 @@ document.getElementById('parseAddBtn').addEventListener('click', async ()=>{
   const {questions, errors, failedRaw} = parseBulkQuestions(text);
   const notice = document.getElementById('parseAddNotice');
   if(questions.length===0){ notice.innerHTML = '<div class="notice err">એક પણ પ્રશ્ન વાંચી શકાયો નહીં. ફોર્મેટ ચકાસો.</div>'; return; }
-  banks[activeBank].questions = (banks[activeBank].questions||[]).concat(questions);
-  await saveBank(activeBank);
+  notice.innerHTML = '<div class="notice warn">ઉમેરાઈ રહ્યું છે...</div>';
+  await addQuestionsToBank(activeBank, questions);
   document.getElementById('bulkInput').value = failedRaw.join('\n\n');
   let msg = `<div class="notice ok">${questions.length} પ્રશ્નો "${esc(banks[activeBank].name)}" બેંકમાં ઉમેરાયા.</div>`;
   if(errors.length) msg += `<div class="notice warn">${errors.length} બ્લોક પાર્સ ના થયા — સુધારીને ફરી ઉમેરો.</div>`;
@@ -1181,7 +1261,6 @@ function normalizeExamText(raw){
 }
 
 document.getElementById('importFileBtn').addEventListener('click', async ()=>{
-  if(!activeBank) return;
   const fileInput = document.getElementById('fileInput');
   const progress = document.getElementById('importProgress');
   const notice = document.getElementById('importNotice');
@@ -1189,26 +1268,36 @@ document.getElementById('importFileBtn').addEventListener('click', async ()=>{
   notice.innerHTML=''; failedWrap.innerHTML='';
   if(!fileInput.files.length){ notice.innerHTML = '<div class="notice err">પહેલા ફાઈલ પસંદ કરો.</div>'; return; }
   const files = Array.from(fileInput.files);
-  let totalAdded = 0; let allFailed = []; let fileErrors = [];
+  let totalAdded = 0; let allFailed = []; let fileErrors = []; let createdBanks = [];
   for(const file of files){
+    const bankName = file.name.replace(/\.[^.]+$/, '');
     progress.innerHTML = `<div class="notice warn">"${esc(file.name)}" માંથી ટેક્સ્ટ કાઢી રહ્યા છીએ...</div>`;
     try{
       const rawText = await extractTextFromFile(file);
       const {questions, failedRaw} = normalizeExamText(rawText);
-      banks[activeBank].questions = (banks[activeBank].questions||[]).concat(questions);
-      await saveBank(activeBank);
+      if(questions.length){
+        progress.innerHTML = `<div class="notice warn">"${esc(bankName)}" નામની નવી બેંકમાં ${questions.length} પ્રશ્નો સેવ થઈ રહ્યા છે...</div>`;
+        const ref = await db.collection('banks').add({ name: bankName, questionCount: 0, createdAt: FieldValue.serverTimestamp() });
+        banks[ref.id] = { name: bankName, questionCount: 0 };
+        await addQuestionsToBank(ref.id, questions);
+        createdBanks.push(bankName);
+        activeBank = ref.id;
+      }
       totalAdded += questions.length;
       failedRaw.forEach(b=>allFailed.push(`[${file.name}] ${b}`));
       if(questions.length===0 && failedRaw.length===0){ fileErrors.push(`"${file.name}": કોઈ ટેક્સ્ટ મળ્યું નહીં (કદાચ સ્કેન કરેલી ઈમેજ PDF).`); }
     }catch(err){ fileErrors.push(`"${file.name}": ${err.message||String(err)}`); }
   }
   progress.innerHTML='';
-  let msg = `<div class="notice ok">કુલ ${totalAdded} પ્રશ્નો "${esc(banks[activeBank].name)}" બેંકમાં ઉમેરાયા (${files.length} ફાઈલમાંથી).</div>`;
+  let msg = createdBanks.length
+    ? `<div class="notice ok">કુલ ${totalAdded} પ્રશ્નો — ${createdBanks.length} નવી અલગ બેંક બની: ${createdBanks.map(esc).join(', ')}.</div>`
+    : `<div class="notice err">કોઈ બેંક બની નહીં.</div>`;
   if(allFailed.length) msg += `<div class="notice warn">${allFailed.length} બ્લોક આપોઆપ ઓળખાયા નહીં — નીચે છે, "પ્રશ્નો ઉમેરો" બોક્સમાં સુધારીને ઉમેરી શકાય.</div>`;
   if(fileErrors.length) msg += `<div class="notice err">${fileErrors.join('<br>')}</div>`;
   notice.innerHTML = msg;
   if(allFailed.length) failedWrap.innerHTML = `<div class="helpbox" style="max-height:200px;overflow:auto;">${allFailed.map((b,i)=>`#${i+1}: ${esc(b).slice(0,300)}${b.length>300?'…':''}`).join('\n')}</div>`;
   fileInput.value='';
+  if(activeBank){ document.getElementById('addQCard').style.display='block'; document.getElementById('activeBankLabel').textContent = banks[activeBank].name; }
   renderBankChips(); renderGenBankList(); renderBankPreview();
 });
 
@@ -1219,7 +1308,7 @@ function renderGenBankList(){
   if(ids.length===0){ wrap.innerHTML = '<span style="color:var(--muted);font-size:13px;">પહેલા "પ્રશ્નબેંક" ટેબમાં જઈને પ્રશ્નો ઉમેરો.</span>'; return; }
   wrap.innerHTML = ids.map(id=>`
     <div class="bank-chip ${genSelected.has(id)?'selected':''}" data-id="${id}" style="cursor:pointer;display:flex;align-items:center;gap:8px;border:1px solid var(--paper-line);background:#FFFEFB;border-radius:20px;padding:6px 12px;font-size:13.5px;${genSelected.has(id)?'border-color:var(--teal);background:#EAF5F3;':''}">
-      <span>${esc(banks[id].name)}</span><span style="color:var(--muted);font-size:12px;">${(banks[id].questions||[]).length} પ્રશ્નો</span>
+      <span>${esc(banks[id].name)}</span><span style="color:var(--muted);font-size:12px;">${banks[id].questionCount||0} પ્રશ્નો</span>
     </div>`).join('');
   wrap.querySelectorAll('.bank-chip').forEach(chip=>{
     chip.addEventListener('click', ()=>{
@@ -1230,12 +1319,18 @@ function renderGenBankList(){
   });
 }
 
-document.getElementById('genPreviewBtn').addEventListener('click', ()=>{
+document.getElementById('genPreviewBtn').addEventListener('click', async ()=>{
   const notice = document.getElementById('genNotice');
   const previewWrap = document.getElementById('parsePreviewWrap');
   if(genSelected.size===0){ notice.innerHTML = '<div class="notice err">ઓછામાં ઓછી એક બેંક પસંદ કરો.</div>'; return; }
+  notice.innerHTML = '<div class="notice warn">પસંદ કરેલી બેંક(ઓ) માંથી પ્રશ્નો લોડ થઈ રહ્યા છે...</div>';
   let pool = [];
-  genSelected.forEach(id => pool = pool.concat(banks[id].questions||[]));
+  try{
+    for(const id of genSelected){
+      const snap = await db.collection('banks').doc(id).collection('questions').get();
+      snap.forEach(d=> pool.push(d.data()));
+    }
+  }catch(e){ notice.innerHTML = `<div class="notice err">પ્રશ્નો લોડ કરવામાં ભૂલ: ${esc(e.message)}</div>`; return; }
   if(pool.length===0){ notice.innerHTML = '<div class="notice err">પસંદ કરેલી બેંક(ઓ)માં કોઈ પ્રશ્ન નથી.</div>'; return; }
   const totalMarks = parseInt(document.getElementById('totalMarks').value,10) || 0;
   const marksPerQ = parseInt(document.getElementById('marksPerQ').value,10) || 1;
