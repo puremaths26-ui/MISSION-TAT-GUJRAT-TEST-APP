@@ -20,7 +20,7 @@
     --teal:#2A8F82; --teal-dark:#1F6E64;
     --green:#3A7D44; --red:#B3402F; --gold:#B8862B;
     --graphite:#332F28; --muted:#7A7460;
-    --bronze:#A0672E; --silver:#8B92A0; --plat:#5C9AA6; --diamond:#2E9BC7; --legendary:#8B3FD9;
+    --bronze:#A0672E; --silver:#8B92A0; --plat:#5C9AA6; --diamond:#2E9BC7; --legendary:#8B3FD9; --gold-light:#E0B04A;
   }
   *{box-sizing:border-box;}
   body{
@@ -149,12 +149,41 @@
   .qpreview .qrow .opts{color:var(--muted);margin-top:2px;}
   .qpreview .qrow .ans{color:var(--green);font-weight:600;}
 
-  #loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:18px;text-align:center;padding:20px;}
-  #loginScreen h1{font-family:'Source Serif 4',serif;color:var(--ink-dark);font-size:26px;margin:0;}
-  #loginScreen p{color:var(--muted);max-width:360px;font-size:14px;}
-  .gsignin{display:inline-flex;align-items:center;gap:10px;background:#fff;border:1px solid #CFC6AD;padding:11px 22px;border-radius:4px;font-weight:600;font-size:14.5px;cursor:pointer;color:var(--ink-dark);}
-  .gsignin:hover{background:#F7F4EA;}
+  #loginScreen{min-height:100vh;background:var(--ink-dark);
+    background-image:radial-gradient(ellipse 900px 500px at 82% -10%, rgba(184,134,43,0.18), transparent 60%);
+    color:#F5F1E6; overflow-x:hidden;}
+  .hero{max-width:1080px;margin:0 auto;padding:26px 24px 90px;position:relative;}
+  .hero-nav{display:flex;justify-content:space-between;align-items:center;padding:6px 0 60px;}
+  .hero-nav .brand{font-family:'Source Serif 4',serif;font-weight:700;font-size:18px;color:#F5F1E6;}
+  .hero-main{display:flex;gap:40px;align-items:center;flex-wrap:wrap;}
+  .hero-copy{flex:1 1 480px;min-width:280px;}
+  .hero-copy .eyebrow{color:var(--gold-light);font-size:13px;font-weight:600;margin-bottom:14px;}
+  .hero-copy h1{font-family:'Source Serif 4',serif;font-weight:700;font-size:44px;line-height:1.18;margin:0 0 18px;color:#FBF8F0;}
+  .hero-copy p.lead{font-size:16px;line-height:1.7;color:#C9C2AC;max-width:60ch;margin:0 0 28px;}
+  .medal{flex:0 0 220px;width:220px;height:220px;position:relative;}
+  .medal svg{width:100%;height:100%;}
+  .cta-row{display:flex;gap:14px;align-items:center;flex-wrap:wrap;}
+  .gsignin{display:inline-flex;align-items:center;gap:10px;background:#F5F1E6;border:none;padding:13px 24px;border-radius:3px;font-weight:600;font-size:15px;cursor:pointer;color:var(--ink-dark);}
+  .gsignin:hover{background:#fff;}
   .gsignin img{width:20px;height:20px;}
+  .cta-note{font-size:12.5px;color:#8B8570;}
+
+  .feature-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1px;background:rgba(255,255,255,0.08);margin-top:70px;border-radius:4px;overflow:hidden;}
+  .feature-cell{background:#132339;padding:26px 24px;}
+  .feature-cell .flabel{font-family:'Source Serif 4',serif;font-size:18px;color:#FBF8F0;margin-bottom:8px;}
+  .feature-cell .fdesc{font-size:13.5px;color:#9AA3AF;line-height:1.6;}
+
+  .price-block{margin-top:70px;background:#132339;border:1px solid rgba(184,134,43,0.35);border-radius:4px;padding:34px 32px;display:flex;gap:32px;flex-wrap:wrap;align-items:center;}
+  .price-block .pinfo{flex:1;min-width:240px;}
+  .price-block h2{font-family:'Source Serif 4',serif;font-size:22px;margin:0 0 10px;color:#FBF8F0;}
+  .price-block ul{margin:0;padding:0;list-style:none;}
+  .price-block li{font-size:13.5px;color:#C9C2AC;padding:5px 0;padding-left:22px;position:relative;}
+  .price-block li::before{content:'—';position:absolute;left:0;color:var(--gold-light);}
+  .price-tag{text-align:center;flex:0 0 auto;}
+  .price-tag .amount{font-family:'Source Serif 4',serif;font-size:38px;color:#FBF8F0;font-weight:700;}
+  .price-tag .per{font-size:12px;color:#8B8570;margin-bottom:14px;}
+  #loginNotice{margin-top:14px;max-width:420px;}
+  @media(max-width:640px){ .hero-copy h1{font-size:32px;} .medal{display:none;} }
 
   #printArea{display:none;}
   @media print{
@@ -167,13 +196,72 @@
 <body>
 
 <div id="loginScreen">
-  <h1>Mission TAT Gujrat — ટેસ્ટ એપ</h1>
-  <p>Google Account થી સાઇન ઇન કરો — ટેસ્ટ આપો, XP કમાવો, બેજ મેળવો અને લીડરબોર્ડમાં તમારું સ્થાન જુઓ.</p>
-  <button class="gsignin" id="googleSignInBtn">
-    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="">
-    Google થી સાઇન ઇન કરો
-  </button>
-  <div id="loginNotice"></div>
+  <div class="hero">
+    <div class="hero-nav">
+      <div class="brand">Mission TAT Gujrat</div>
+    </div>
+
+    <div class="hero-main">
+      <div class="hero-copy">
+        <div class="eyebrow">TAT · TET પરીક્ષા તૈયારી</div>
+        <h1>તમારી તૈયારીને એક મિશન બનાવો</h1>
+        <p class="lead">રોજ પ્રેક્ટિસ ટેસ્ટ આપો, તરત સ્કોર જુઓ, XP કમાવો અને બીજા ઉમેદવારો સાથે લીડરબોર્ડમાં તમારું સ્થાન ચકાસો — બધું એક જ જગ્યાએ.</p>
+        <div class="cta-row">
+          <button class="gsignin" id="googleSignInBtn">
+            Google થી સાઇન ઇન કરો
+          </button>
+          <span class="cta-note">1 મિનિટમાં શરૂ કરો</span>
+        </div>
+        <div id="loginNotice"></div>
+      </div>
+
+      <div class="medal" aria-hidden="true">
+        <svg viewBox="0 0 200 200">
+          <defs>
+            <linearGradient id="medalGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#E0B04A"/>
+              <stop offset="100%" stop-color="#8A5F1E"/>
+            </linearGradient>
+          </defs>
+          <path d="M80 95 L55 15 L80 15 L100 60 L120 15 L145 15 L120 95 Z" fill="#2A8F82" opacity="0.55"/>
+          <circle cx="100" cy="125" r="58" fill="url(#medalGrad)"/>
+          <circle cx="100" cy="125" r="58" fill="none" stroke="#FBF8F0" stroke-width="2" opacity="0.25"/>
+          <circle cx="100" cy="125" r="42" fill="none" stroke="#FBF8F0" stroke-width="1.5" opacity="0.4" stroke-dasharray="4 4"/>
+          <text x="100" y="134" text-anchor="middle" font-family="'Source Serif 4',serif" font-size="34" font-weight="700" fill="#FBF8F0">TAT</text>
+        </svg>
+      </div>
+    </div>
+
+    <div class="feature-row">
+      <div class="feature-cell">
+        <div class="flabel">પ્રેક્ટિસ ટેસ્ટ</div>
+        <div class="fdesc">MCQ ટેસ્ટ આપો, સબમિટ કરતાં જ સ્કોર અને સાચા-ખોટા જવાબ મળે.</div>
+      </div>
+      <div class="feature-cell">
+        <div class="flabel">XP અને બેજ</div>
+        <div class="fdesc">દરેક ટેસ્ટના 100 XP — Bronze થી Legendary સુધી તમારો રેન્ક વધારો.</div>
+      </div>
+      <div class="feature-cell">
+        <div class="flabel">લીડરબોર્ડ</div>
+        <div class="fdesc">દરેક ટેસ્ટનું અને ઓવરઓલ XP નું — બીજા ઉમેદવારો સાથે તમારું સ્થાન જુઓ.</div>
+      </div>
+    </div>
+
+    <div class="price-block">
+      <div class="pinfo">
+        <h2>Full Access</h2>
+        <ul>
+          <li>બધા ઉપલબ્ધ ટેસ્ટ, અમર્યાદિત વખત</li>
+          <li>દરેક ટેસ્ટના જવાબ + PDF ડાઉનલોડ</li>
+          <li>XP, બેજ અને લીડરબોર્ડ</li>
+        </ul>
+      </div>
+      <div class="price-tag">
+        <div class="amount" id="priceAmountLanding">₹—</div>
+        <div class="per">એક-વખતનું / માસિક</div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="app" id="app" style="display:none;">
@@ -203,6 +291,20 @@
 
   <!-- ================= TEST TAB ================= -->
   <section id="test" class="active">
+    <div class="card" id="paymentGateCard" style="display:none;background:var(--ink-dark);color:#F5F1E6;border:1px solid rgba(184,134,43,0.35);">
+      <h2 style="color:#FBF8F0;">તમારું Subscription બાકી છે</h2>
+      <div class="sub" style="color:#9AA3AF;">ટેસ્ટ આપવા માટે subscribe કરો — બધા ટેસ્ટ, XP, બેજ અને લીડરબોર્ડ ખુલી જશે.</div>
+      <ul style="margin:14px 0;padding:0;list-style:none;">
+        <li style="font-size:13.5px;color:#C9C2AC;padding:4px 0;padding-left:20px;position:relative;"><span style="position:absolute;left:0;color:var(--gold-light);">—</span> બધા ઉપલબ્ધ ટેસ્ટ, અમર્યાદિત વખત</li>
+        <li style="font-size:13.5px;color:#C9C2AC;padding:4px 0;padding-left:20px;position:relative;"><span style="position:absolute;left:0;color:var(--gold-light);">—</span> દરેક ટેસ્ટના જવાબ + PDF ડાઉનલોડ</li>
+        <li style="font-size:13.5px;color:#C9C2AC;padding:4px 0;padding-left:20px;position:relative;"><span style="position:absolute;left:0;color:var(--gold-light);">—</span> XP, બેજ અને લીડરબોર્ડ</li>
+      </ul>
+      <div style="font-family:'Source Serif 4',serif;font-size:30px;color:#FBF8F0;font-weight:700;margin-bottom:14px;" id="priceAmountGate"></div>
+      <div class="btn-row">
+        <a class="btn" id="paymentLinkBtn" href="#" target="_blank" rel="noopener" style="background:var(--gold-light);border-color:var(--gold-light);color:#26210F;">Subscribe કરો</a>
+      </div>
+      <div class="helpbox" style="background:rgba(255,255,255,0.06);color:#9AA3AF;">પેમેન્ટ કર્યા પછી પણ ટેસ્ટ ના ખુલે તો થોડી વાર રાહ જુઓ અથવા એડમિનનો સંપર્ક કરો.</div>
+    </div>
     <div class="card" id="testListCard">
       <h2>ઉપલબ્ધ ટેસ્ટ</h2>
       <div class="sub">એક ટેસ્ટ પસંદ કરો અને શરૂ કરો.</div>
@@ -397,6 +499,7 @@ Marks: 1"></textarea>
 
     <div class="card admin-panel" id="admin-users" style="display:none;">
       <h2>બધા યુઝર્સ</h2>
+      <input type="text" id="userSearchBox" placeholder="નામ અથવા ઈમેલ થી શોધો..." style="margin-bottom:10px;">
       <div id="usersWrap"><div class="empty">લોડ થઈ રહ્યું છે...</div></div>
       <div class="btn-row"><button class="btn secondary" id="usersRefreshBtn">રિફ્રેશ કરો</button></div>
     </div>
@@ -430,7 +533,10 @@ const FieldValue = firebase.firestore.FieldValue;
 
 const ADMIN_EMAILS = ['puremaths26@gmail.com']; // અહીં વધુ admin email ઉમેરી શકાય
 const ADMIN_PASSWORD = '192329192329192329';
+const PAYMENT_LINK = 'https://rzp.io/rzp/VsjPgKl'; // ⚠️ અહીં તમારી Razorpay Payment Link ની URL મૂકો
+const PRICE_LABEL = '₹99'; // ⚠️ અહીં તમારી ખરી કિંમત લખો
 let adminUnlocked = false;
+document.getElementById('priceAmountLanding').textContent = PRICE_LABEL;
 
 let currentUser = null; // {uid, name, email, photoURL}
 let userDoc = null;     // firestore users/{uid} data
@@ -487,7 +593,7 @@ document.getElementById('signOutBtn').addEventListener('click', ()=>{ auth.signO
 auth.onAuthStateChanged(async (user)=>{
   if(!user){
     currentUser = null; userDoc = null; isAdmin = false;
-    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('loginScreen').style.display = 'block';
     document.getElementById('app').style.display = 'none';
     return;
   }
@@ -553,6 +659,14 @@ document.getElementById('adminUnlockBtn').addEventListener('click', ()=>{
 
 // ================= TEST LIST / TAKING =================
 async function loadTestList(){
+  const paid = isAdmin || userDoc.isPaid === true;
+  document.getElementById('paymentGateCard').style.display = paid ? 'none' : 'block';
+  document.getElementById('testListCard').style.display = paid ? 'block' : 'none';
+  if(!paid){
+    document.getElementById('paymentLinkBtn').href = PAYMENT_LINK;
+    document.getElementById('priceAmountGate').textContent = PRICE_LABEL;
+    return;
+  }
   const wrap = document.getElementById('testListWrap');
   try{
     const q = await db.collection('tests').where('isActive','==',true).get();
@@ -638,13 +752,23 @@ document.getElementById('submitTestBtn').addEventListener('click', async ()=>{
   const btn = document.getElementById('submitTestBtn');
   btn.disabled = true; btn.textContent = 'સેવ થઈ રહ્યું છે...';
   try{
-    await db.collection('submissions').add({
+    const batch = db.batch();
+    const subRef = db.collection('submissions').doc();
+    batch.set(subRef, {
+      uid: currentUser.uid, name: currentUser.name,
+      testId: currentTest.id, testTitle: currentTest.title,
+      score, total: currentTest.totalMarks, correct, wrong, skipped,
+      date: FieldValue.serverTimestamp()
+    });
+    const reviewRef = db.collection('reviews').doc();
+    batch.set(reviewRef, {
       uid: currentUser.uid, name: currentUser.name, email: currentUser.email,
       testId: currentTest.id, testTitle: currentTest.title,
       score, total: currentTest.totalMarks, correct, wrong, skipped,
       answers: answerDetails,
       date: FieldValue.serverTimestamp()
     });
+    await batch.commit();
     await db.collection('users').doc(currentUser.uid).update({
       totalXP: FieldValue.increment(100),
       testsTaken: FieldValue.increment(1)
@@ -682,7 +806,7 @@ async function loadMyTests(){
   document.getElementById('reviewCard').style.display = 'none';
   wrap.innerHTML = '<div class="empty">લોડ થઈ રહ્યું છે...</div>';
   try{
-    const q = await db.collection('submissions').where('uid','==',currentUser.uid).get();
+    const q = await db.collection('reviews').where('uid','==',currentUser.uid).get();
     const subs = [];
     q.forEach(doc=> subs.push({ id: doc.id, ...doc.data() }));
     subs.sort((a,b)=> (b.date?.seconds||0) - (a.date?.seconds||0));
@@ -1197,18 +1321,36 @@ async function loadAdminUsers(){
   wrap.innerHTML = '<div class="empty">લોડ થઈ રહ્યું છે...</div>';
   try{
     const q = await db.collection('users').orderBy('totalXP','desc').get();
-    const users = []; q.forEach(d=>users.push(d.data()));
-    if(users.length===0){ wrap.innerHTML = '<div class="empty">કોઈ યુઝર નથી.</div>'; return; }
-    wrap.innerHTML = `<table class="datatable"><thead><tr><th>નામ</th><th>ઈમેલ</th><th>બેજ</th><th>XP</th><th>ટેસ્ટ લીધા</th></tr></thead><tbody>
-      ${users.map(u=>`<tr>
-        <td>${esc(u.name)}</td><td>${esc(u.email)}</td>
-        <td>${badgePillHTML(u.totalXP||0)}</td>
-        <td>${u.totalXP||0}</td><td>${u.testsTaken||0}</td>
-      </tr>`).join('')}
-    </tbody></table>`;
+    const users = []; q.forEach(d=>users.push({ uid: d.id, ...d.data() }));
+    window._allUsersCache = users;
+    renderUsersTable(users);
   }catch(e){ wrap.innerHTML = `<div class="notice err">${esc(e.message)}</div>`; }
 }
+function renderUsersTable(users){
+  const wrap = document.getElementById('usersWrap');
+  if(users.length===0){ wrap.innerHTML = '<div class="empty">કોઈ યુઝર મળ્યો નથી.</div>'; return; }
+  wrap.innerHTML = `<table class="datatable"><thead><tr><th>નામ</th><th>ઈમેલ</th><th>બેજ</th><th>XP</th><th>ટેસ્ટ લીધા</th><th>પેમેન્ટ</th></tr></thead><tbody>
+    ${users.map(u=>`<tr>
+      <td>${esc(u.name)}</td><td>${esc(u.email)}</td>
+      <td>${badgePillHTML(u.totalXP||0)}</td>
+      <td>${u.totalXP||0}</td><td>${u.testsTaken||0}</td>
+      <td>${u.isPaid? '✅ Paid <button class="btn secondary" data-unpay="'+u.uid+'" style="padding:3px 8px;font-size:11px;">રદ કરો</button>' : '<button class="btn secondary" data-pay="'+u.uid+'" style="padding:3px 8px;font-size:11px;">ચુકવણી કન્ફર્મ કરો</button>'}</td>
+    </tr>`).join('')}
+  </tbody></table>`;
+}
 document.getElementById('usersRefreshBtn').addEventListener('click', loadAdminUsers);
+document.getElementById('userSearchBox').addEventListener('input', (e)=>{
+  const term = e.target.value.trim().toLowerCase();
+  const all = window._allUsersCache || [];
+  if(!term){ renderUsersTable(all); return; }
+  renderUsersTable(all.filter(u => (u.name||'').toLowerCase().includes(term) || (u.email||'').toLowerCase().includes(term)));
+});
+document.getElementById('usersWrap').addEventListener('click', async (e)=>{
+  const payBtn = e.target.closest('button[data-pay]');
+  const unpayBtn = e.target.closest('button[data-unpay]');
+  if(payBtn){ await db.collection('users').doc(payBtn.dataset.pay).update({isPaid:true}); loadAdminUsers(); }
+  if(unpayBtn){ await db.collection('users').doc(unpayBtn.dataset.unpay).update({isPaid:false}); loadAdminUsers(); }
+});
 
 async function loadAdminSubmissions(){
   const wrap = document.getElementById('subsWrap');
@@ -1226,6 +1368,17 @@ async function loadAdminSubmissions(){
   }catch(e){ wrap.innerHTML = `<div class="notice err">${esc(e.message)}</div>`; }
 }
 document.getElementById('subsRefreshBtn').addEventListener('click', loadAdminSubmissions);
+
+// ================= COSMETIC DETERRENTS ONLY =================
+// ⚠️ આ REAL security નથી — કોઈ પણ ટેકનિકલ વ્યક્તિ બ્રાઉઝર DevTools થી બાયપાસ કરી શકે.
+// સાચી સુરક્ષા Firestore rules (ઉપર) દ્વારા જ મળે છે. આ ફક્ત સામાન્ય copy-paste ને
+// થોડું અઘરું બનાવે છે.
+document.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('keydown', e => {
+  if(e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key)) || (e.ctrlKey && e.key === 'u')){
+    e.preventDefault();
+  }
+});
 </script>
 </body>
 </html>
