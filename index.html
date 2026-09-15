@@ -163,6 +163,11 @@
   .medal{flex:0 0 220px;width:220px;height:220px;position:relative;}
   .medal svg{width:100%;height:100%;}
   .cta-row{display:flex;gap:14px;align-items:center;flex-wrap:wrap;}
+  .steps-box{margin-top:6px;}
+  .step-line{font-size:13.5px;font-weight:600;color:#C9C2AC;display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+  .step-num{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:var(--gold-light);color:#26210F;font-size:11px;font-weight:700;flex:none;}
+  .btn-step1{display:inline-flex;align-items:center;gap:10px;background:var(--gold-light);border:none;padding:12px 22px;border-radius:3px;font-weight:600;font-size:14.5px;cursor:pointer;color:#26210F;text-decoration:none;}
+  .btn-step1:hover{background:#EAC26B;}
   .gsignin{display:inline-flex;align-items:center;gap:10px;background:#F5F1E6;border:none;padding:13px 24px;border-radius:3px;font-weight:600;font-size:15px;cursor:pointer;color:var(--ink-dark);}
   .gsignin:hover{background:#fff;}
   .gsignin img{width:20px;height:20px;}
@@ -223,12 +228,13 @@
       <div class="hero-copy">
         <div class="eyebrow">TAT · TET પરીક્ષા તૈયારી</div>
         <h1>તમારી તૈયારીને એક મિશન બનાવો</h1>
-        <p class="lead">રોજ પ્રેક્ટિસ ટેસ્ટ આપો, તરત સ્કોર જુઓ, XP કમાવો અને બીજા ઉમેદવારો સાથે લીડરબોર્ડમાં તમારું સ્થાન ચકાસો — બધું એક જ જગ્યાએ.</p>
-        <div class="cta-row">
-          <button class="gsignin" id="googleSignInBtn">
-            Google થી સાઇન ઇન કરો
-          </button>
-          <span class="cta-note">1 મિનિટમાં શરૂ કરો</span>
+        <p class="lead">રોજ પ્રેક્ટિસ ટેસ્ટ આપો, તરત સ્કોર જુઓ અને બીજા ઉમેદવારો સાથે લીડરબોર્ડમાં તમારું સ્થાન ચકાસો — બધું એક જ જગ્યાએ.</p>
+        <div class="steps-box">
+          <div class="step-line"><span class="step-num">1</span> <span id="priceAmountLanding2">₹—</span> નું પેમેન્ટ કરો</div>
+          <a class="btn-step1" id="landingPayBtn" href="#" target="_blank" rel="noopener">પેમેન્ટ કરો</a>
+          <div class="step-line" style="margin-top:16px;"><span class="step-num">2</span> Google Account થી લોગ ઇન કરો</div>
+          <button class="gsignin" id="googleSignInBtn">Google થી સાઇન ઇન કરો</button>
+          <div class="cta-note" style="margin-top:10px;">પેમેન્ટ પહેલા કરો, પછી જ લોગ ઇન કરો — પેમેન્ટ થયા બાદ થોડી વારમાં તમારો એક્સેસ ચાલુ થઈ જશે.</div>
         </div>
         <div id="loginNotice"></div>
       </div>
@@ -245,7 +251,9 @@
           <circle cx="100" cy="125" r="58" fill="url(#medalGrad)"/>
           <circle cx="100" cy="125" r="58" fill="none" stroke="#FBF8F0" stroke-width="2" opacity="0.25"/>
           <circle cx="100" cy="125" r="42" fill="none" stroke="#FBF8F0" stroke-width="1.5" opacity="0.4" stroke-dasharray="4 4"/>
-          <text x="100" y="134" text-anchor="middle" font-family="'Source Serif 4',serif" font-size="34" font-weight="700" fill="#FBF8F0">TAT</text>
+          <text x="100" y="118" text-anchor="middle" font-family="'Source Serif 4',serif" font-size="16" font-weight="700" fill="#FBF8F0">MISSION</text>
+          <text x="100" y="138" text-anchor="middle" font-family="'Source Serif 4',serif" font-size="15" font-weight="700" fill="#FBF8F0">TAT</text>
+          <text x="100" y="156" text-anchor="middle" font-family="'Source Serif 4',serif" font-size="14" font-weight="700" fill="#FBF8F0">GUJRAT</text>
         </svg>
       </div>
     </div>
@@ -256,12 +264,8 @@
         <div class="fdesc">MCQ ટેસ્ટ આપો, સબમિટ કરતાં જ સ્કોર અને સાચા-ખોટા જવાબ મળે.</div>
       </div>
       <div class="feature-cell">
-        <div class="flabel">XP અને બેજ</div>
-        <div class="fdesc">દરેક ટેસ્ટના 100 XP — Bronze થી Legendary સુધી તમારો રેન્ક વધારો.</div>
-      </div>
-      <div class="feature-cell">
         <div class="flabel">લીડરબોર્ડ</div>
-        <div class="fdesc">દરેક ટેસ્ટનું અને ઓવરઓલ XP નું — બીજા ઉમેદવારો સાથે તમારું સ્થાન જુઓ.</div>
+        <div class="fdesc">દરેક ટેસ્ટનું અને ઓવરઓલ ટકાવારીનું — બીજા ઉમેદવારો સાથે તમારું સ્થાન જુઓ.</div>
       </div>
     </div>
 
@@ -271,7 +275,7 @@
         <ul>
           <li>બધા ઉપલબ્ધ ટેસ્ટ, અમર્યાદિત વખત</li>
           <li>દરેક ટેસ્ટના જવાબ + PDF ડાઉનલોડ</li>
-          <li>XP, બેજ અને લીડરબોર્ડ</li>
+          <li>લીડરબોર્ડમાં તમારું સ્થાન</li>
         </ul>
       </div>
       <div class="price-tag">
@@ -311,11 +315,11 @@
   <section id="test" class="active">
     <div class="card" id="paymentGateCard" style="display:none;background:var(--ink-dark);color:#F5F1E6;border:1px solid rgba(184,134,43,0.35);">
       <h2 style="color:#FBF8F0;">તમારું Subscription બાકી છે</h2>
-      <div class="sub" style="color:#9AA3AF;">ટેસ્ટ આપવા માટે subscribe કરો — બધા ટેસ્ટ, XP, બેજ અને લીડરબોર્ડ ખુલી જશે.</div>
+      <div class="sub" style="color:#9AA3AF;">ટેસ્ટ આપવા માટે subscribe કરો — બધા ટેસ્ટ અને લીડરબોર્ડ ખુલી જશે.</div>
       <ul style="margin:14px 0;padding:0;list-style:none;">
         <li style="font-size:13.5px;color:#C9C2AC;padding:4px 0;padding-left:20px;position:relative;"><span style="position:absolute;left:0;color:var(--gold-light);">—</span> બધા ઉપલબ્ધ ટેસ્ટ, અમર્યાદિત વખત</li>
         <li style="font-size:13.5px;color:#C9C2AC;padding:4px 0;padding-left:20px;position:relative;"><span style="position:absolute;left:0;color:var(--gold-light);">—</span> દરેક ટેસ્ટના જવાબ + PDF ડાઉનલોડ</li>
-        <li style="font-size:13.5px;color:#C9C2AC;padding:4px 0;padding-left:20px;position:relative;"><span style="position:absolute;left:0;color:var(--gold-light);">—</span> XP, બેજ અને લીડરબોર્ડ</li>
+        <li style="font-size:13.5px;color:#C9C2AC;padding:4px 0;padding-left:20px;position:relative;"><span style="position:absolute;left:0;color:var(--gold-light);">—</span> લીડરબોર્ડમાં તમારું સ્થાન</li>
       </ul>
       <div style="font-family:'Source Serif 4',serif;font-size:30px;color:#FBF8F0;font-weight:700;margin-bottom:14px;" id="priceAmountGate"></div>
       <div class="btn-row">
@@ -375,7 +379,7 @@
     <div class="card">
       <h2>લીડરબોર્ડ</h2>
       <div class="subtabs">
-        <button data-lb="overall" class="active">ઓવરઓલ (XP)</button>
+        <button data-lb="overall" class="active">ઓવરઓલ (ટકાવારી)</button>
         <button data-lb="pertest">ટેસ્ટ પ્રમાણે</button>
       </div>
       <div id="lbTestSelectWrap" style="display:none;">
@@ -521,6 +525,13 @@ Marks: 1"></textarea>
 
     <div class="card admin-panel" id="admin-users" style="display:none;">
       <h2>બધા યુઝર્સ</h2>
+      <div class="sub">કોઈને સીધો એક્સેસ આપવો હોય (ભલે તેણે હજુ લોગ ઇન ના કર્યું હોય) તો તેનો Google ઈમેલ અહીં ઉમેરો — તે લોગ ઇન કરશે એટલે આપોઆપ paid ગણાશે.</div>
+      <div class="row" style="align-items:flex-end;">
+        <div><label>ઈમેલ થી સીધો એક્સેસ આપો</label><input type="text" id="preauthEmail" placeholder="friend@gmail.com"></div>
+        <div style="flex:none;"><button class="btn secondary" id="preauthAddBtn">એક્સેસ આપો</button></div>
+      </div>
+      <div id="preauthNotice"></div>
+      <div id="preauthListWrap" style="margin:10px 0 18px;"></div>
       <input type="text" id="userSearchBox" placeholder="નામ અથવા ઈમેલ થી શોધો..." style="margin-bottom:10px;">
       <div id="usersWrap"><div class="empty">લોડ થઈ રહ્યું છે...</div></div>
       <div class="btn-row"><button class="btn secondary" id="usersRefreshBtn">રિફ્રેશ કરો</button></div>
@@ -556,9 +567,11 @@ const FieldValue = firebase.firestore.FieldValue;
 const ADMIN_EMAILS = ['puremaths26@gmail.com']; // અહીં વધુ admin email ઉમેરી શકાય
 const ADMIN_PASSWORD = '192329192329192329';
 const PAYMENT_LINK = 'https://rzp.io/l/YOUR-PAYMENT-LINK'; // ⚠️ અહીં તમારી Razorpay Payment Link ની URL મૂકો
-const PRICE_LABEL = '₹99'; // ⚠️ અહીં તમારી ખરી કિંમત લખો
+const PRICE_LABEL = '₹149';
 let adminUnlocked = false;
 document.getElementById('priceAmountLanding').textContent = PRICE_LABEL;
+document.getElementById('priceAmountLanding2').textContent = PRICE_LABEL;
+document.getElementById('landingPayBtn').href = PAYMENT_LINK;
 setTimeout(()=>{
   const s = document.getElementById('splashScreen');
   if(s){ s.classList.add('hide'); setTimeout(()=>{ s.style.display='none'; }, 650); }
@@ -628,12 +641,23 @@ auth.onAuthStateChanged(async (user)=>{
 
   const userRef = db.collection('users').doc(currentUser.uid);
   const snap = await userRef.get();
+  const emailKey = (currentUser.email||'').toLowerCase();
   if(!snap.exists){
-    userDoc = { name: currentUser.name, email: currentUser.email, photoURL: currentUser.photoURL, totalXP:0, testsTaken:0, createdAt: FieldValue.serverTimestamp() };
+    userDoc = { name: currentUser.name, email: currentUser.email, photoURL: currentUser.photoURL, totalXP:0, testsTaken:0, isPaid:false, createdAt: FieldValue.serverTimestamp() };
+    try{
+      const preSnap = await db.collection('preauthorized').doc(emailKey).get();
+      if(preSnap.exists) userDoc.isPaid = true;
+    }catch(e){}
     await userRef.set(userDoc);
   }else{
     userDoc = snap.data();
     await userRef.update({ name: currentUser.name, photoURL: currentUser.photoURL, lastLogin: FieldValue.serverTimestamp() });
+    if(!userDoc.isPaid && !isAdmin){
+      try{
+        const preSnap = await db.collection('preauthorized').doc(emailKey).get();
+        if(preSnap.exists){ await userRef.update({ isPaid: true }); userDoc.isPaid = true; }
+      }catch(e){}
+    }
   }
 
   document.getElementById('loginScreen').style.display = 'none';
@@ -940,23 +964,33 @@ async function loadLeaderboardTab(){
       const q = await db.collection('submissions').where('testId','==',testId).get();
       const rows = []; q.forEach(d=>rows.push(d.data()));
       rows.sort((a,b)=> b.score-a.score);
-      renderLbTable(wrap, rows.map(r=>({name:r.name, xp: null, scoreText: r.score+'/'+r.total})), 'score');
+      renderLbTable(wrap, rows.map(r=>({name:r.name, scoreText: r.score+'/'+r.total})), 'score');
     }catch(e){ wrap.innerHTML = `<div class="notice err">${esc(e.message)}</div>`; }
   }else{
     try{
-      const q = await db.collection('users').orderBy('totalXP','desc').limit(100).get();
-      const rows = []; q.forEach(d=>rows.push(d.data()));
-      renderLbTable(wrap, rows.map(r=>({name:r.name, xp:r.totalXP||0, scoreText: (r.totalXP||0)+' XP'})), 'xp');
+      const q = await db.collection('submissions').get();
+      const byUser = {}; // uid -> {name, sumPct, testsCount}
+      q.forEach(d=>{
+        const s = d.data();
+        const attempted = (s.correct||0)+(s.wrong||0)+(s.skipped||0);
+        if(attempted===0) return;
+        const pct = (s.correct||0)/attempted*100;
+        if(!byUser[s.uid]) byUser[s.uid] = { name: s.name, sumPct: 0, testsCount: 0 };
+        byUser[s.uid].sumPct += pct;
+        byUser[s.uid].testsCount += 1;
+      });
+      const rows = Object.values(byUser).map(u=> ({ name: u.name, avgPct: u.sumPct/u.testsCount, testsCount: u.testsCount }));
+      rows.sort((a,b)=> b.avgPct - a.avgPct);
+      renderLbTable(wrap, rows.map(r=>({name:r.name, scoreText: r.avgPct.toFixed(1)+'% ('+r.testsCount+' ટેસ્ટ)'})), 'overall');
     }catch(e){ wrap.innerHTML = `<div class="notice err">${esc(e.message)}</div>`; }
   }
 }
 function renderLbTable(wrap, rows, mode){
   if(rows.length===0){ wrap.innerHTML = '<div class="empty">હજુ કોઈ ડેટા નથી.</div>'; return; }
-  wrap.innerHTML = `<table class="datatable"><thead><tr><th>ક્રમ</th><th>નામ</th><th>${mode==='xp'?'બેજ':''}</th><th>${mode==='xp'?'XP':'સ્કોર'}</th></tr></thead><tbody>
+  wrap.innerHTML = `<table class="datatable"><thead><tr><th>ક્રમ</th><th>નામ</th><th>${mode==='overall'?'સરેરાશ ટકાવારી':'સ્કોર'}</th></tr></thead><tbody>
     ${rows.map((r,i)=>`<tr>
       <td><span class="rank-badge ${i===0?'r1':i===1?'r2':i===2?'r3':''}">${i+1}</span></td>
       <td>${esc(r.name)}</td>
-      <td>${mode==='xp'? badgePillHTML(r.xp) : ''}</td>
       <td>${esc(r.scoreText)}</td>
     </tr>`).join('')}
   </tbody></table>`;
@@ -993,7 +1027,7 @@ document.querySelector('#admin .subtabs').addEventListener('click', (e)=>{
   document.getElementById('admin-'+btn.dataset.admin).style.display = 'block';
   if(btn.dataset.admin==='bank' || btn.dataset.admin==='create') loadBanks();
   if(btn.dataset.admin==='manage') loadAdminTests();
-  if(btn.dataset.admin==='users') loadAdminUsers();
+  if(btn.dataset.admin==='users'){ loadAdminUsers(); loadPreauthList(); }
   if(btn.dataset.admin==='submissions') loadAdminSubmissions();
 });
 
@@ -1018,16 +1052,30 @@ function renderBankChips(){
   wrap.innerHTML = ids.map(id=>`
     <div class="bank-chip" data-id="${id}" style="cursor:pointer;display:flex;align-items:center;gap:8px;border:1px solid var(--paper-line);background:#FFFEFB;border-radius:20px;padding:6px 6px 6px 12px;font-size:13.5px;${activeBank===id?'border-color:var(--teal);background:#EAF5F3;':''}">
       <span>${esc(banks[id].name)}</span><span style="color:var(--muted);font-size:12px;">${banks[id].questionCount||0} પ્રશ્નો</span>
+      <button class="bank-edit-btn" data-editid="${id}" title="નામ બદલો" style="border:none;background:none;color:var(--teal);cursor:pointer;font-size:13px;line-height:1;padding:2px 4px;">✎</button>
       <button class="bank-del-btn" data-delid="${id}" title="બેંક ડિલીટ કરો" style="border:none;background:none;color:var(--red);cursor:pointer;font-size:15px;line-height:1;padding:2px 6px;">✕</button>
     </div>`).join('');
   wrap.querySelectorAll('.bank-chip').forEach(chip=>{
     chip.addEventListener('click', (e)=>{
-      if(e.target.closest('.bank-del-btn')) return;
+      if(e.target.closest('.bank-del-btn') || e.target.closest('.bank-edit-btn')) return;
       activeBank = chip.dataset.id;
       document.getElementById('addQCard').style.display = 'block';
       document.getElementById('activeBankLabel').textContent = banks[activeBank].name;
       renderBankChips();
       renderBankPreview();
+    });
+  });
+  wrap.querySelectorAll('.bank-edit-btn').forEach(btn=>{
+    btn.addEventListener('click', async (e)=>{
+      e.stopPropagation();
+      const id = btn.dataset.editid;
+      const newName = prompt('નવું નામ લખો:', banks[id].name);
+      if(newName && newName.trim()){
+        await db.collection('banks').doc(id).update({ name: newName.trim() });
+        banks[id].name = newName.trim();
+        if(activeBank===id) document.getElementById('activeBankLabel').textContent = newName.trim();
+        renderBankChips(); renderGenBankList();
+      }
     });
   });
   wrap.querySelectorAll('.bank-del-btn').forEach(btn=>{
@@ -1069,11 +1117,23 @@ async function renderBankPreview(){
   wrap.innerHTML = '<div style="color:var(--muted);font-size:13px;">લોડ થઈ રહ્યું છે...</div>';
   try{
     const snap = await db.collection('banks').doc(activeBank).collection('questions').limit(100).get();
-    const qs = []; snap.forEach(d=>qs.push(d.data()));
+    const qs = []; snap.forEach(d=>qs.push({ id:d.id, ...d.data() }));
     if(qs.length===0){ wrap.innerHTML = '<div style="color:var(--muted);font-size:13px;">આ બેંકમાં હજુ કોઈ પ્રશ્ન નથી.</div>'; return; }
     const total = banks[activeBank].questionCount || qs.length;
     const note = total>qs.length ? `<div style="font-size:12px;color:var(--muted);margin-bottom:8px;">કુલ ${total} માંથી પહેલા ${qs.length} બતાવ્યા છે</div>` : '';
-    wrap.innerHTML = note + qs.map((q,i)=>`<div class="qrow" style="padding:8px 0;border-bottom:1px dashed var(--paper-line);font-size:13.5px;"><b style="color:var(--ink-dark);">${i+1}. ${esc(q.text)}</b><div style="color:var(--green);font-weight:600;">સાચો: ${esc(q.options[q.correct]||'')}</div></div>`).join('');
+    wrap.innerHTML = note + qs.map((q,i)=>`<div class="qrow" style="padding:8px 0;border-bottom:1px dashed var(--paper-line);font-size:13.5px;display:flex;justify-content:space-between;gap:10px;align-items:flex-start;">
+        <div><b style="color:var(--ink-dark);">${i+1}. ${esc(q.text)}</b><div style="color:var(--green);font-weight:600;">સાચો: ${esc(q.options[q.correct]||'')}</div></div>
+        <button class="q-del-btn" data-qdel="${q.id}" title="આ પ્રશ્ન ડિલીટ કરો" style="border:none;background:none;color:var(--red);cursor:pointer;font-size:14px;flex:none;">✕</button>
+      </div>`).join('');
+    wrap.querySelectorAll('.q-del-btn').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        if(!confirm('આ પ્રશ્ન ડિલીટ કરવો છે?')) return;
+        await db.collection('banks').doc(activeBank).collection('questions').doc(btn.dataset.qdel).delete();
+        await db.collection('banks').doc(activeBank).update({ questionCount: FieldValue.increment(-1) });
+        banks[activeBank].questionCount = Math.max(0, (banks[activeBank].questionCount||1)-1);
+        renderBankChips(); renderGenBankList(); renderBankPreview();
+      });
+    });
   }catch(e){ wrap.innerHTML = `<div class="notice err">${esc(e.message)}</div>`; }
 }
 
@@ -1433,6 +1493,7 @@ async function loadAdminTests(){
         <td>${(t.questions||[]).length}</td>
         <td>${t.isActive?'✅ Active':'⏸ Inactive'}</td>
         <td>
+          <button class="btn secondary" data-edit="${t.id}" data-name="${esc(t.title)}" style="padding:5px 10px;font-size:12px;">નામ બદલો</button>
           <button class="btn secondary" data-toggle="${t.id}" data-cur="${t.isActive}">${t.isActive?'નિષ્ક્રિય કરો':'સક્રિય કરો'}</button>
           <button class="btn danger" data-del="${t.id}">ડિલીટ</button>
         </td>
@@ -1444,6 +1505,15 @@ document.getElementById('manageRefreshBtn').addEventListener('click', loadAdminT
 document.getElementById('manageTestsWrap').addEventListener('click', async (e)=>{
   const toggleBtn = e.target.closest('button[data-toggle]');
   const delBtn = e.target.closest('button[data-del]');
+  const editBtn = e.target.closest('button[data-edit]');
+  if(editBtn){
+    const newName = prompt('નવું નામ લખો:', editBtn.dataset.name);
+    if(newName && newName.trim()){
+      await db.collection('tests').doc(editBtn.dataset.edit).update({ title: newName.trim() });
+      loadAdminTests(); loadTestList();
+    }
+    return;
+  }
   if(toggleBtn){
     const cur = toggleBtn.dataset.cur === 'true';
     await db.collection('tests').doc(toggleBtn.dataset.toggle).update({ isActive: !cur });
@@ -1474,7 +1544,8 @@ function renderUsersTable(users){
       <td>${esc(u.name)}</td><td>${esc(u.email)}</td>
       <td>${badgePillHTML(u.totalXP||0)}</td>
       <td>${u.totalXP||0}</td><td>${u.testsTaken||0}</td>
-      <td>${u.isPaid? '✅ Paid <button class="btn secondary" data-unpay="'+u.uid+'" style="padding:3px 8px;font-size:11px;">રદ કરો</button>' : '<button class="btn secondary" data-pay="'+u.uid+'" style="padding:3px 8px;font-size:11px;">ચુકવણી કન્ફર્મ કરો</button>'}</td>
+      <td>${u.isPaid? '✅ Paid <button class="btn secondary" data-unpay="'+u.uid+'" style="padding:3px 8px;font-size:11px;">રદ કરો</button>' : '<button class="btn secondary" data-pay="'+u.uid+'" style="padding:3px 8px;font-size:11px;">ચુકવણી કન્ફર્મ કરો</button>'}
+        <button class="btn danger" data-deluser="${u.uid}" style="padding:3px 8px;font-size:11px;">ડિલીટ</button></td>
     </tr>`).join('')}
   </tbody></table>`;
 }
@@ -1488,26 +1559,72 @@ document.getElementById('userSearchBox').addEventListener('input', (e)=>{
 document.getElementById('usersWrap').addEventListener('click', async (e)=>{
   const payBtn = e.target.closest('button[data-pay]');
   const unpayBtn = e.target.closest('button[data-unpay]');
+  const delBtn = e.target.closest('button[data-deluser]');
   if(payBtn){ await db.collection('users').doc(payBtn.dataset.pay).update({isPaid:true}); loadAdminUsers(); }
   if(unpayBtn){ await db.collection('users').doc(unpayBtn.dataset.unpay).update({isPaid:false}); loadAdminUsers(); }
+  if(delBtn){
+    if(!confirm('આ યુઝરનો રેકોર્ડ કાયમ માટે ડિલીટ કરવો છે? (તેમના જૂના ટેસ્ટ સ્કોર લીડરબોર્ડમાં રહેશે, પણ પ્રોફાઇલ ડિલીટ થશે)')) return;
+    await db.collection('users').doc(delBtn.dataset.deluser).delete();
+    loadAdminUsers();
+  }
 });
+
+document.getElementById('preauthAddBtn').addEventListener('click', async ()=>{
+  const input = document.getElementById('preauthEmail');
+  const notice = document.getElementById('preauthNotice');
+  const email = input.value.trim().toLowerCase();
+  if(!email || !email.includes('@')){ notice.innerHTML = '<div class="notice err">સાચો ઈમેલ લખો.</div>'; return; }
+  try{
+    await db.collection('preauthorized').doc(email).set({ addedAt: FieldValue.serverTimestamp(), addedBy: currentUser.email });
+    input.value = '';
+    notice.innerHTML = `<div class="notice ok">"${esc(email)}" ને એક્સેસ અપાયો — તે Google થી લોગ ઇન કરશે એટલે આપોઆપ paid ગણાશે.</div>`;
+    loadPreauthList();
+  }catch(e){ notice.innerHTML = `<div class="notice err">${esc(e.message)}</div>`; }
+});
+
+async function loadPreauthList(){
+  const wrap = document.getElementById('preauthListWrap');
+  try{
+    const q = await db.collection('preauthorized').get();
+    const list = []; q.forEach(d=>list.push(d.id));
+    if(list.length===0){ wrap.innerHTML=''; return; }
+    wrap.innerHTML = '<div style="font-size:12.5px;color:var(--muted);margin-bottom:6px;">પેન્ડિંગ એક્સેસ (હજુ લોગ ઇન નથી કર્યું):</div>' + list.map(em=>`
+      <span style="display:inline-flex;align-items:center;gap:6px;border:1px solid var(--paper-line);border-radius:20px;padding:4px 10px;margin:2px;font-size:12.5px;">
+        ${esc(em)} <button class="preauth-del" data-email="${esc(em)}" style="border:none;background:none;color:var(--red);cursor:pointer;">✕</button>
+      </span>`).join('');
+    wrap.querySelectorAll('.preauth-del').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        await db.collection('preauthorized').doc(btn.dataset.email).delete();
+        loadPreauthList();
+      });
+    });
+  }catch(e){ wrap.innerHTML = `<div class="notice err">${esc(e.message)}</div>`; }
+}
 
 async function loadAdminSubmissions(){
   const wrap = document.getElementById('subsWrap');
   wrap.innerHTML = '<div class="empty">લોડ થઈ રહ્યું છે...</div>';
   try{
     const q = await db.collection('submissions').orderBy('date','desc').limit(200).get();
-    const subs = []; q.forEach(d=>subs.push(d.data()));
+    const subs = []; q.forEach(d=>subs.push({ id: d.id, ...d.data() }));
     if(subs.length===0){ wrap.innerHTML = '<div class="empty">કોઈ સબમિશન નથી.</div>'; return; }
-    wrap.innerHTML = `<table class="datatable"><thead><tr><th>નામ</th><th>ટેસ્ટ</th><th>સ્કોર</th><th>તારીખ</th></tr></thead><tbody>
+    wrap.innerHTML = `<table class="datatable"><thead><tr><th>નામ</th><th>ટેસ્ટ</th><th>સ્કોર</th><th>તારીખ</th><th></th></tr></thead><tbody>
       ${subs.map(s=>`<tr>
         <td>${esc(s.name)}</td><td>${esc(s.testTitle)}</td><td>${s.score}/${s.total}</td>
         <td>${s.date? new Date(s.date.seconds*1000).toLocaleString('en-GB') : '-'}</td>
+        <td><button class="btn danger" data-delsub="${s.id}" style="padding:3px 8px;font-size:11px;">ડિલીટ</button></td>
       </tr>`).join('')}
     </tbody></table>`;
   }catch(e){ wrap.innerHTML = `<div class="notice err">${esc(e.message)}</div>`; }
 }
 document.getElementById('subsRefreshBtn').addEventListener('click', loadAdminSubmissions);
+document.getElementById('subsWrap').addEventListener('click', async (e)=>{
+  const btn = e.target.closest('button[data-delsub]');
+  if(!btn) return;
+  if(!confirm('આ સબમિશન લીડરબોર્ડ પરથી કાયમ માટે ડિલીટ કરવું છે?')) return;
+  await db.collection('submissions').doc(btn.dataset.delsub).delete();
+  loadAdminSubmissions();
+});
 
 // ================= COSMETIC DETERRENTS ONLY =================
 // ⚠️ આ REAL security નથી — કોઈ પણ ટેકનિકલ વ્યક્તિ બ્રાઉઝર DevTools થી બાયપાસ કરી શકે.
