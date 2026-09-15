@@ -1017,6 +1017,12 @@ async function loadLeaderboardTab(){
       try{
         const q = await db.collection('tests').where('category','==',selectedCategory).get();
         const tests = []; q.forEach(d=>tests.push({id:d.id, title:d.data().title}));
+        if(tests.length===0){
+          sel.innerHTML = '';
+          wrap.innerHTML = `<div class="empty">"${esc(selectedCategory)}" કેટેગરીમાં હજુ કોઈ ટેસ્ટ નથી (અથવા જૂના ટેસ્ટને કેટેગરી અપાયેલી નથી — Admin → ટેસ્ટ મેનેજ કરો માં જઈને કેટેગરી પસંદ કરો).</div>`;
+          lbTestsLoadedForCategory = selectedCategory;
+          return;
+        }
         sel.innerHTML = tests.map(t=>`<option value="${t.id}">${esc(t.title)}</option>`).join('');
         lbTestsLoadedForCategory = selectedCategory;
       }catch(e){ wrap.innerHTML = `<div class="notice err">${esc(e.message)}</div>`; return; }
@@ -1554,10 +1560,15 @@ async function loadAdminTests(){
     const q = await db.collection('tests').get();
     const tests = []; q.forEach(d=>tests.push({id:d.id, ...d.data()}));
     if(tests.length===0){ wrap.innerHTML = '<div class="empty">કોઈ ટેસ્ટ નથી.</div>'; return; }
-    wrap.innerHTML = `<table class="datatable"><thead><tr><th>ટેસ્ટ</th><th>કેટેગરી</th><th>પ્રશ્નો</th><th>સ્ટેટસ</th><th></th></tr></thead><tbody>
+    const uncategorized = tests.filter(t=>!t.category).length;
+    const note = uncategorized>0 ? `<div class="notice warn">${uncategorized} ટેસ્ટને હજુ કેટેગરી નથી — તે "ટેસ્ટ આપો" કે "લીડરબોર્ડ" ક્યાંય નહીં દેખાય. નીચે "કેટેગરી" કૉલમમાંથી પસંદ કરો, આપોઆપ સેવ થઈ જશે.</div>` : '';
+    wrap.innerHTML = note + `<table class="datatable"><thead><tr><th>ટેસ્ટ</th><th>કેટેગરી</th><th>પ્રશ્નો</th><th>સ્ટેટસ</th><th></th></tr></thead><tbody>
       ${tests.map(t=>`<tr>
         <td>${esc(t.title)}</td>
-        <td>${esc(t.category||'—')}</td>
+        <td><select class="cat-quick-edit" data-testid="${t.id}" style="padding:4px 6px;font-size:12.5px;${!t.category?'border-color:#B3402F;':''}">
+          <option value="" ${!t.category?'selected':''}>— પસંદ કરો —</option>
+          ${CATEGORIES.map(c=>`<option value="${escAttr(c)}" ${t.category===c?'selected':''}>${esc(c)}</option>`).join('')}
+        </select></td>
         <td>${(t.questions||[]).length}</td>
         <td>${t.isActive?'✅ Active':'⏸ Inactive'}</td>
         <td>
@@ -1568,6 +1579,14 @@ async function loadAdminTests(){
         </td>
       </tr>`).join('')}
     </tbody></table>`;
+    wrap.querySelectorAll('.cat-quick-edit').forEach(sel=>{
+      sel.addEventListener('change', async ()=>{
+        if(!sel.value) return;
+        await db.collection('tests').doc(sel.dataset.testid).update({ category: sel.value });
+        sel.style.borderColor = '';
+        loadTestList();
+      });
+    });
   }catch(e){ wrap.innerHTML = `<div class="notice err">${esc(e.message)}</div>`; }
 }
 document.getElementById('manageRefreshBtn').addEventListener('click', loadAdminTests);
