@@ -190,7 +190,8 @@
   #loginNotice{margin-top:14px;max-width:420px;}
   @media(max-width:640px){ .hero-copy h1{font-size:32px;} .medal{display:none;} }
 
-  #printArea{display:none;}
+  .cat-btn{background:#fff;border:1px solid var(--paper-line);border-radius:4px;padding:20px 14px;text-align:center;font-weight:600;color:var(--ink-dark);cursor:pointer;font-family:'Noto Sans Gujarati',sans-serif;font-size:14px;}
+  .cat-btn:hover{border-color:var(--teal);background:#EAF5F3;}
   @media print{
     body > *:not(#printArea){display:none !important;}
     #printArea{display:block !important;}
@@ -286,12 +287,22 @@
   </div>
 </div>
 
+<div id="categoryScreen" style="display:none;">
+  <div class="app" style="padding-top:60px;">
+    <div class="card" style="max-width:560px;margin:0 auto;">
+      <h2>તમારી પરીક્ષા પસંદ કરો</h2>
+      <div class="sub">જે પરીક્ષાની તૈયારી કરો છો એ પસંદ કરો — ફક્ત એ જ કેટેગરીના ટેસ્ટ અને લીડરબોર્ડ દેખાશે.</div>
+      <div id="categoryGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-top:16px;"></div>
+    </div>
+  </div>
+</div>
+
 <div class="app" id="app" style="display:none;">
 
   <div class="masthead">
     <div>
       <h1>Mission TAT Gujrat</h1>
-      <div class="tagline">ટેસ્ટ આપો, XP કમાવો, બેજ મેળવો</div>
+      <div class="tagline">ટેસ્ટ આપો, XP કમાવો, બેજ મેળવો — <span id="currentCategoryLabel"></span> <button class="signout" id="switchCategoryBtn" style="margin-left:6px;">(બદલો)</button></div>
     </div>
     <div class="userchip">
       <img id="uAvatar" src="" alt="">
@@ -299,6 +310,10 @@
         <div class="uname" id="uName"></div>
         <span class="badge-pill" id="uBadge"></span>
       </div>
+      <span style="font-size:12px;color:var(--muted);border-left:1px solid var(--paper-line);padding-left:12px;">
+        <span id="catBadgeLabel" style="font-weight:600;color:var(--ink-dark);"></span>
+        <button class="signout" id="changeCategoryBtn" style="margin-left:6px;">બદલો</button>
+      </span>
       <button class="signout" id="signOutBtn">સાઇન આઉટ</button>
     </div>
   </div>
@@ -498,6 +513,9 @@ Marks: 1"></textarea>
       <label>ટેસ્ટનું નામ</label>
       <input type="text" id="newTestTitle" placeholder="દા.ત. TET 2 - Gujarati - Full Test 1">
 
+      <label>પરીક્ષા કેટેગરી</label>
+      <select id="newTestCategory"></select>
+
       <div class="row">
         <div><label>કુલ ગુણ</label><input type="number" id="totalMarks" value="50"></div>
         <div><label>પ્રતિ પ્રશ્ન ગુણ</label><input type="number" id="marksPerQ" value="1"></div>
@@ -661,14 +679,37 @@ auth.onAuthStateChanged(async (user)=>{
   }
 
   document.getElementById('loginScreen').style.display = 'none';
-  document.getElementById('app').style.display = 'block';
   document.getElementById('uAvatar').src = currentUser.photoURL;
   document.getElementById('uName').textContent = currentUser.name;
   document.getElementById('uBadge').outerHTML = badgePillHTML(userDoc.totalXP).replace('<span','<span id="uBadge"');
   document.getElementById('adminTabBtn').style.display = isAdmin ? '' : 'none';
 
-  loadTestList();
-  renderProfile();
+  document.getElementById('categoryScreen').style.display = 'block';
+  renderCategoryGrid();
+});
+
+const CATEGORIES = ['TET 1','TET 2','TAT SECONDARY','TAT HIGHER SECONDARY','HTAT','CCE','HMAT'];
+let selectedCategory = null;
+document.getElementById('newTestCategory').innerHTML = CATEGORIES.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
+
+function renderCategoryGrid(){
+  const grid = document.getElementById('categoryGrid');
+  grid.innerHTML = CATEGORIES.map(c=>`<button class="cat-btn" data-cat="${esc(c)}">${esc(c)}</button>`).join('');
+  grid.querySelectorAll('.cat-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      selectedCategory = btn.dataset.cat;
+      document.getElementById('categoryScreen').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      document.getElementById('catBadgeLabel').textContent = selectedCategory;
+      loadTestList();
+      renderProfile();
+    });
+  });
+}
+document.getElementById('changeCategoryBtn').addEventListener('click', ()=>{
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('categoryScreen').style.display = 'block';
+  renderCategoryGrid();
 });
 
 // ================= TABS =================
@@ -719,10 +760,10 @@ async function loadTestList(){
   }
   const wrap = document.getElementById('testListWrap');
   try{
-    const q = await db.collection('tests').where('isActive','==',true).get();
+    const q = await db.collection('tests').where('isActive','==',true).where('category','==',selectedCategory).get();
     allTestsCache = [];
     q.forEach(doc=> allTestsCache.push({ id: doc.id, ...doc.data() }));
-    if(allTestsCache.length===0){ wrap.innerHTML = '<div class="empty">હજુ કોઈ ટેસ્ટ ઉપલબ્ધ નથી.</div>'; return; }
+    if(allTestsCache.length===0){ wrap.innerHTML = `<div class="empty">"${esc(selectedCategory)}" માટે હજુ કોઈ ટેસ્ટ ઉપલબ્ધ નથી.</div>`; return; }
     wrap.innerHTML = `<div class="testlist">${allTestsCache.map(t=>`
       <div class="testcard">
         <h3>${esc(t.title)}</h3>
@@ -951,13 +992,11 @@ async function loadLeaderboardTab(){
 
   if(mode==='pertest'){
     const sel = document.getElementById('lbTestSelect');
-    if(sel.options.length===0){
-      try{
-        const q = await db.collection('tests').get();
-        const tests = []; q.forEach(d=>tests.push({id:d.id, title:d.data().title}));
-        sel.innerHTML = tests.map(t=>`<option value="${t.id}">${esc(t.title)}</option>`).join('');
-      }catch(e){ wrap.innerHTML = `<div class="notice err">${esc(e.message)}</div>`; return; }
-    }
+    try{
+      const q = await db.collection('tests').where('category','==',selectedCategory).get();
+      const tests = []; q.forEach(d=>tests.push({id:d.id, title:d.data().title}));
+      sel.innerHTML = tests.map(t=>`<option value="${t.id}">${esc(t.title)}</option>`).join('');
+    }catch(e){ wrap.innerHTML = `<div class="notice err">${esc(e.message)}</div>`; return; }
     const testId = sel.value;
     if(!testId){ wrap.innerHTML = '<div class="empty">કોઈ ટેસ્ટ નથી.</div>'; return; }
     try{
@@ -968,10 +1007,13 @@ async function loadLeaderboardTab(){
     }catch(e){ wrap.innerHTML = `<div class="notice err">${esc(e.message)}</div>`; }
   }else{
     try{
+      const testsSnap = await db.collection('tests').where('category','==',selectedCategory).get();
+      const catTestIds = new Set(); testsSnap.forEach(d=>catTestIds.add(d.id));
       const q = await db.collection('submissions').get();
       const byUser = {}; // uid -> {name, sumPct, testsCount}
       q.forEach(d=>{
         const s = d.data();
+        if(!catTestIds.has(s.testId)) return;
         const attempted = (s.correct||0)+(s.wrong||0)+(s.skipped||0);
         if(attempted===0) return;
         const pct = (s.correct||0)/attempted*100;
@@ -1460,8 +1502,9 @@ document.getElementById('saveNewTestBtn').addEventListener('click', async ()=>{
   const notice = document.getElementById('saveTestNotice');
   if(!title){ notice.innerHTML = '<div class="notice warn">ટેસ્ટનું નામ લખો.</div>'; return; }
   try{
+    const category = document.getElementById('newTestCategory').value;
     await db.collection('tests').add({
-      title, questions: generatedTest.questions, totalMarks: generatedTest.totalMarks, isActive: true,
+      title, category, questions: generatedTest.questions, totalMarks: generatedTest.totalMarks, isActive: true,
       createdBy: currentUser.email, createdAt: FieldValue.serverTimestamp()
     });
     // હવે જ used-tracking commit કરીએ, જેથી ફક્ત ખરેખર publish થયેલા ટેસ્ટ જ cycle ગણાય
@@ -1487,9 +1530,10 @@ async function loadAdminTests(){
     const q = await db.collection('tests').get();
     const tests = []; q.forEach(d=>tests.push({id:d.id, ...d.data()}));
     if(tests.length===0){ wrap.innerHTML = '<div class="empty">કોઈ ટેસ્ટ નથી.</div>'; return; }
-    wrap.innerHTML = `<table class="datatable"><thead><tr><th>ટેસ્ટ</th><th>પ્રશ્નો</th><th>સ્ટેટસ</th><th></th></tr></thead><tbody>
+    wrap.innerHTML = `<table class="datatable"><thead><tr><th>ટેસ્ટ</th><th>કેટેગરી</th><th>પ્રશ્નો</th><th>સ્ટેટસ</th><th></th></tr></thead><tbody>
       ${tests.map(t=>`<tr>
         <td>${esc(t.title)}</td>
+        <td>${esc(t.category||'—')}</td>
         <td>${(t.questions||[]).length}</td>
         <td>${t.isActive?'✅ Active':'⏸ Inactive'}</td>
         <td>
