@@ -1324,30 +1324,71 @@ document.getElementById('genPreviewBtn').addEventListener('click', async ()=>{
   const previewWrap = document.getElementById('parsePreviewWrap');
   if(genSelected.size===0){ notice.innerHTML = '<div class="notice err">ઓછામાં ઓછી એક બેંક પસંદ કરો.</div>'; return; }
   notice.innerHTML = '<div class="notice warn">પસંદ કરેલી બેંક(ઓ) માંથી પ્રશ્નો લોડ થઈ રહ્યા છે...</div>';
-  let pool = [];
+
+  // દરેક બેંક એક "ડેક" જેમ કામ કરે: પહેલા બધા પ્રશ્નો (usedIds માં ના હોય તે) વપરાય,
+  // પછી જ એ બેંક માટે નવો cycle શરૂ થાય (reshuffle) અને repeat આવે.
+  let bankData = {}; // bankId -> {all:[...], usedSet:Set}
+  let combined = []; // available questions across selected banks, tagged with bankId
   try{
     for(const id of genSelected){
+      const bankDoc = await db.collection('banks').doc(id).get();
+      const usedIds = (bankDoc.exists && bankDoc.data().usedIds) || [];
       const snap = await db.collection('banks').doc(id).collection('questions').get();
-      snap.forEach(d=> pool.push(d.data()));
+      const all = []; snap.forEach(d=> all.push({ id: d.id, ...d.data(), bankId: id }));
+      const usedSet = new Set(usedIds);
+      bankData[id] = { all, usedSet };
+      combined.push(...all.filter(q => !usedSet.has(q.id)));
     }
   }catch(e){ notice.innerHTML = `<div class="notice err">પ્રશ્નો લોડ કરવામાં ભૂલ: ${esc(e.message)}</div>`; return; }
-  if(pool.length===0){ notice.innerHTML = '<div class="notice err">પસંદ કરેલી બેંક(ઓ)માં કોઈ પ્રશ્ન નથી.</div>'; return; }
+
+  const totalPoolSize = Object.values(bankData).reduce((s,b)=>s+b.all.length,0);
+  if(totalPoolSize===0){ notice.innerHTML = '<div class="notice err">પસંદ કરેલી બેંક(ઓ)માં કોઈ પ્રશ્ન નથી.</div>'; return; }
   const totalMarks = parseInt(document.getElementById('totalMarks').value,10) || 0;
   const marksPerQ = parseInt(document.getElementById('marksPerQ').value,10) || 1;
   const doShuffleOpts = document.getElementById('shuffleOpts').value === 'yes';
   let numQ = Math.floor(totalMarks / marksPerQ);
   let warn = '';
-  if(numQ > pool.length){ warn = `પસંદ કરેલી બેંક(ઓ)માં ફક્ત ${pool.length} પ્રશ્નો છે — એટલો જ ટેસ્ટ બનશે.`; numQ = pool.length; }
+  if(numQ > totalPoolSize){ warn = `પસંદ કરેલી બેંક(ઓ)માં કુલ ફક્ત ${totalPoolSize} પ્રશ્નો છે — એટલો જ ટેસ્ટ બનશે.`; numQ = totalPoolSize; }
   else if(numQ*marksPerQ !== totalMarks){ warn = `બરાબર ભાગી શકાતું નથી — ${numQ} પ્રશ્નો (${numQ*marksPerQ} ગુણ)નો ટેસ્ટ બનશે.`; }
   if(numQ===0){ notice.innerHTML = '<div class="notice err">ગુણ તપાસો — 0 પ્રશ્નો બને છે.</div>'; return; }
 
-  const chosen = shuffle(pool).slice(0, numQ);
+  let chosen;
+  let resetBankIds = new Set();
+  if(combined.length >= numQ){
+    chosen = shuffle(combined).slice(0, numQ);
+  }else{
+    chosen = combined.slice();
+    const remaining = numQ - chosen.length;
+    let resetPool = [];
+    genSelected.forEach(id=>{
+      const alreadyChosen = new Set(chosen.filter(c=>c.bankId===id).map(c=>c.id));
+      resetPool.push(...bankData[id].all.filter(q=>!alreadyChosen.has(q.id)));
+    });
+    const extra = shuffle(resetPool).slice(0, remaining);
+    extra.forEach(q=> resetBankIds.add(q.bankId));
+    chosen = chosen.concat(extra);
+  }
+
+  // આ ડ્રો ને "used" તરીકે નોંધવા માટે તૈયાર કરીએ — ખરેખર save થાય ત્યારે જ commit થશે
+  const bankUpdates = [];
+  genSelected.forEach(id=>{
+    const drawn = chosen.filter(c=>c.bankId===id).map(c=>c.id);
+    if(drawn.length===0) return;
+    let newUsed;
+    if(resetBankIds.has(id)){ newUsed = drawn; }
+    else{
+      newUsed = Array.from(new Set([...bankData[id].usedSet, ...drawn]));
+      if(newUsed.length >= bankData[id].all.length) newUsed = []; // આખી બેંક વપરાઈ ગઈ — આપોઆપ નવો cycle
+    }
+    bankUpdates.push({ bankId: id, newUsed });
+  });
+
   const testQuestions = chosen.map(q=>{
     let opts = q.options.map((text,idx)=>({text, isCorrect: idx===q.correct}));
     if(doShuffleOpts) opts = shuffle(opts);
     return { id: uid(), text: q.text, marks: q.marks || marksPerQ, options: opts };
   });
-  generatedTest = { questions: testQuestions, totalMarks: testQuestions.reduce((s,q)=>s+q.marks,0) };
+  generatedTest = { questions: testQuestions, totalMarks: testQuestions.reduce((s,q)=>s+q.marks,0), bankUpdates };
   notice.innerHTML = (warn? `<div class="notice warn">${warn}</div>` : '') + `<div class="notice ok">${testQuestions.length} પ્રશ્નોનો ટેસ્ટ તૈયાર — નીચે નામ લખીને "ટેસ્ટ સેવ કરો" દબાવો.</div>`;
   previewWrap.innerHTML = `<div class="helpbox" style="max-height:220px;overflow:auto;">${testQuestions.map((q,i)=>`${i+1}. ${esc(q.text)} — સાચો: ${esc(q.options.find(o=>o.isCorrect).text)}`).join('\n')}</div>`;
   document.getElementById('saveNewTestBtn').style.display = 'inline-block';
@@ -1363,6 +1404,10 @@ document.getElementById('saveNewTestBtn').addEventListener('click', async ()=>{
       title, questions: generatedTest.questions, totalMarks: generatedTest.totalMarks, isActive: true,
       createdBy: currentUser.email, createdAt: FieldValue.serverTimestamp()
     });
+    // હવે જ used-tracking commit કરીએ, જેથી ફક્ત ખરેખર publish થયેલા ટેસ્ટ જ cycle ગણાય
+    for(const u of (generatedTest.bankUpdates||[])){
+      await db.collection('banks').doc(u.bankId).update({ usedIds: u.newUsed });
+    }
     notice.innerHTML = '<div class="notice ok">ટેસ્ટ સેવ અને પબ્લિશ થયો! "ટેસ્ટ આપો" ટેબમાં હવે દેખાશે.</div>';
     document.getElementById('newTestTitle').value = '';
     document.getElementById('parsePreviewWrap').innerHTML = '';
