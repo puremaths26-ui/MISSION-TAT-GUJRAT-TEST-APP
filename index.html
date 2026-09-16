@@ -773,11 +773,10 @@ document.getElementById('adminUnlockBtn').addEventListener('click', ()=>{
 async function loadTestList(){
   const paid = isAdmin || userDoc.isPaid === true;
   document.getElementById('paymentGateCard').style.display = paid ? 'none' : 'block';
-  document.getElementById('testListCard').style.display = paid ? 'block' : 'none';
+  document.getElementById('testListCard').style.display = 'block';
   if(!paid){
     document.getElementById('paymentLinkBtn').href = PAYMENT_LINK;
     document.getElementById('priceAmountGate').textContent = PRICE_LABEL;
-    return;
   }
   const wrap = document.getElementById('testListWrap');
   try{
@@ -789,13 +788,17 @@ async function loadTestList(){
       <div class="testcard">
         <h3>${esc(t.title)}</h3>
         <div class="meta">${(t.questions||[]).length} પ્રશ્નો · ${t.totalMarks||0} ગુણ</div>
-        <button class="btn" data-starttest="${t.id}">ટેસ્ટ આપો</button>
+        ${paid
+          ? `<button class="btn" data-starttest="${t.id}">ટેસ્ટ આપો</button>`
+          : `<button class="btn secondary" data-locked="1" style="opacity:.75;">🔒 Subscribe કરીને ખોલો</button>`}
       </div>`).join('')}</div>`;
   }catch(e){
     wrap.innerHTML = `<div class="notice err">ટેસ્ટ લોડ કરવામાં ભૂલ: ${esc(e.message)}</div>`;
   }
 }
 document.getElementById('testListWrap').addEventListener('click', (e)=>{
+  const lockedBtn = e.target.closest('button[data-locked]');
+  if(lockedBtn){ document.getElementById('paymentGateCard').scrollIntoView({behavior:'smooth', block:'center'}); return; }
   const btn = e.target.closest('button[data-starttest]');
   if(!btn) return;
   const t = allTestsCache.find(x=>x.id===btn.dataset.starttest);
