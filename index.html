@@ -615,6 +615,8 @@ setTimeout(()=>{
 let currentUser = null; // {uid, name, email, photoURL}
 let userDoc = null;     // firestore users/{uid} data
 let isAdmin = false;
+let mySessionId = null;
+let sessionUnsub = null;
 
 let currentTest = null;   // test being taken {id, title, questions:[...], totalMarks}
 let answers = {};
@@ -668,6 +670,7 @@ document.getElementById('signOutBtn').addEventListener('click', ()=>{ auth.signO
 auth.onAuthStateChanged(async (user)=>{
   if(!user){
     currentUser = null; userDoc = null; isAdmin = false;
+    if(sessionUnsub){ sessionUnsub(); sessionUnsub = null; }
     document.getElementById('loginScreen').style.display = 'block';
     document.getElementById('categoryScreen').style.display = 'none';
     document.getElementById('app').style.display = 'none';
@@ -675,10 +678,10 @@ auth.onAuthStateChanged(async (user)=>{
   }
   currentUser = { uid:user.uid, name:user.displayName||'વપરાશકર્તા', email:user.email||'', photoURL:user.photoURL||'' };
   isAdmin = ADMIN_EMAILS.includes(currentUser.email);
+  const emailKey = (currentUser.email||'').toLowerCase();
 
   const userRef = db.collection('users').doc(currentUser.uid);
   const snap = await userRef.get();
-  const emailKey = (currentUser.email||'').toLowerCase();
   if(!snap.exists){
     userDoc = { name: currentUser.name, email: currentUser.email, photoURL: currentUser.photoURL, totalXP:0, testsTaken:0, isPaid:false, createdAt: FieldValue.serverTimestamp() };
     try{
@@ -696,6 +699,30 @@ auth.onAuthStateChanged(async (user)=>{
       }catch(e){}
     }
   }
+
+  // ---- એક જ સમયે એક જ ડિવાઇસ/બ્રાઉઝર પર લોગ ઇન રહે — બીજે લોગ ઇન થાય એટલે આ સેશન આપોઆપ સાઇન આઉટ થાય ----
+  mySessionId = uid();
+  await userRef.update({ activeSessionId: mySessionId });
+  if(sessionUnsub){ sessionUnsub(); sessionUnsub = null; }
+  sessionUnsub = userRef.onSnapshot((doc)=>{
+    if(!doc.exists){
+      // એડમિન એ રેકોર્ડ દૂર કર્યો — ફરી શરૂઆતથી લોગ ઇન ફ્લો ચલાવવા પેજ રિલોડ કરીએ
+      if(sessionUnsub){ sessionUnsub(); sessionUnsub = null; }
+      location.reload();
+      return;
+    }
+    const d = doc.data();
+    if(d.activeSessionId && d.activeSessionId !== mySessionId){
+      if(sessionUnsub){ sessionUnsub(); sessionUnsub = null; }
+      alert('તમારું એકાઉન્ટ બીજા ડિવાઇસ/બ્રાઉઝર પર લોગ ઇન થયું — આ સેશન બંધ થાય છે.');
+      auth.signOut();
+      return;
+    }
+    if(userDoc && d.isPaid !== userDoc.isPaid){
+      userDoc.isPaid = d.isPaid;
+      if(selectedCategory) loadTestList();
+    }
+  });
 
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('uAvatar').src = currentUser.photoURL;
@@ -1734,7 +1761,7 @@ function renderUsersTable(users){
       <td>${badgePillHTML(u.totalXP||0)}</td>
       <td>${u.totalXP||0}</td><td>${u.testsTaken||0}</td>
       <td>${u.isPaid? '✅ Paid <button class="btn secondary" data-unpay="'+u.uid+'" style="padding:3px 8px;font-size:11px;">રદ કરો</button>' : '<button class="btn secondary" data-pay="'+u.uid+'" style="padding:3px 8px;font-size:11px;">ચુકવણી કન્ફર્મ કરો</button>'}
-        <button class="btn danger" data-deluser="${u.uid}" style="padding:3px 8px;font-size:11px;">ડિલીટ</button></td>
+        <button class="btn danger" data-deluser="${u.uid}" style="padding:3px 8px;font-size:11px;">દૂર કરો</button></td>
     </tr>`).join('')}
   </tbody></table>`;
 }
@@ -1752,7 +1779,7 @@ document.getElementById('usersWrap').addEventListener('click', async (e)=>{
   if(payBtn){ await db.collection('users').doc(payBtn.dataset.pay).update({isPaid:true}); loadAdminUsers(); }
   if(unpayBtn){ await db.collection('users').doc(unpayBtn.dataset.unpay).update({isPaid:false}); loadAdminUsers(); }
   if(delBtn){
-    if(!confirm('આ યુઝરનો રેકોર્ડ કાયમ માટે ડિલીટ કરવો છે? (તેમના જૂના ટેસ્ટ સ્કોર લીડરબોર્ડમાં રહેશે, પણ પ્રોફાઇલ ડિલીટ થશે)')) return;
+    if(!confirm('આ યુઝરનો રેકોર્ડ દૂર કરવો છે? તેમનું એક્સેસ બંધ થઈ જશે (isPaid ફરી false). તે ફરીથી લોગ ઇન કરી શકશે — ફરી પેમેન્ટ કરે તો તમે ફરી "ચુકવણી કન્ફર્મ કરો" દબાવી શકો.')) return;
     await db.collection('users').doc(delBtn.dataset.deluser).delete();
     loadAdminUsers();
   }
