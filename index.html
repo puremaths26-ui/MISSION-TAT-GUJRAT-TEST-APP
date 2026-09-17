@@ -810,6 +810,7 @@ async function loadTestList(){
     const q = await db.collection('tests').where('isActive','==',true).where('category','==',selectedCategory).get();
     allTestsCache = [];
     q.forEach(doc=> allTestsCache.push({ id: doc.id, ...doc.data() }));
+    allTestsCache.sort((a,b)=> (a.createdAt?.seconds||0) - (b.createdAt?.seconds||0));
     if(allTestsCache.length===0){ wrap.innerHTML = `<div class="empty">"${esc(selectedCategory)}" માટે હજુ કોઈ ટેસ્ટ ઉપલબ્ધ નથી.</div>`; return; }
     wrap.innerHTML = `<div class="testlist">${allTestsCache.map(t=>`
       <div class="testcard">
@@ -1589,6 +1590,7 @@ async function loadAdminTests(){
   try{
     const q = await db.collection('tests').get();
     const tests = []; q.forEach(d=>tests.push({id:d.id, ...d.data()}));
+    tests.sort((a,b)=> (a.createdAt?.seconds||0) - (b.createdAt?.seconds||0));
     if(tests.length===0){ wrap.innerHTML = '<div class="empty">કોઈ ટેસ્ટ નથી.</div>'; return; }
     const uncategorized = tests.filter(t=>!t.category).length;
     const note = uncategorized>0 ? `<div class="notice warn">${uncategorized} ટેસ્ટને હજુ કેટેગરી નથી — તે "ટેસ્ટ આપો" કે "લીડરબોર્ડ" ક્યાંય નહીં દેખાય. નીચે "કેટેગરી" કૉલમમાંથી પસંદ કરો, આપોઆપ સેવ થઈ જશે.</div>` : '';
