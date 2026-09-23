@@ -4,9 +4,9 @@
 
 const CACHE_NAME = "mission-tat-gujrat-v1";
 const APP_SHELL = [
-  "/",
-  "/index.html",
-  "/manifest.json"
+  "./",
+  "./index.html",
+  "./manifest.json"
 ];
 
 // Install: pre-cache the app shell
