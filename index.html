@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mission TAT Gujrat — ટેસ્ટ એપ</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#2A8F82">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Gujarati:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,500;8..60,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
@@ -601,7 +603,7 @@ const FieldValue = firebase.firestore.FieldValue;
 
 const ADMIN_EMAILS = ['puremaths26@gmail.com']; // અહીં વધુ admin email ઉમેરી શકાય
 const ADMIN_PASSWORD = '192329192329192329';
-const PAYMENT_LINK = 'https://rzp.io/rzp/CRDpRBmy'; // ⚠️ અહીં તમારી Razorpay Payment Link ની URL મૂકો
+const PAYMENT_LINK = 'https://rzp.io/rzp/gY21XFgo'; // ⚠️ અહીં તમારી Razorpay Payment Link ની URL મૂકો
 const PRICE_LABEL = '₹149';
 let adminUnlocked = false;
 document.getElementById('priceAmountLanding').textContent = PRICE_LABEL;
@@ -733,6 +735,27 @@ auth.onAuthStateChanged(async (user)=>{
   document.getElementById('categoryScreen').style.display = 'block';
   renderCategoryGrid();
 });
+
+// ================= પેમેન્ટ પછી ઓટો-અનલોક (Razorpay ટેબ પરથી પાછા આવતાં) =================
+// Razorpay payment link નવા ટેબમાં ખૂલે છે (target="_blank"), એટલે આ ટેબ ખુલ્લું જ રહે છે.
+// યુઝર પેમેન્ટ કરીને પાછો આ ટેબ પર આવે (ટેબ સ્વિચ કરે) ત્યારે — જો એડમિને preauthorized
+// લિસ્ટમાં એનું ઈમેલ ઉમેરી દીધું હોય — તો પેજ રિલોડ કે ફરી લોગ ઇન કર્યા વગર જ ટેસ્ટ અનલોક થાય.
+async function checkPreauthorizedAndUnlock(){
+  if(!currentUser || !userDoc || isAdmin || userDoc.isPaid) return;
+  try{
+    const emailKey = (currentUser.email||'').toLowerCase();
+    const preSnap = await db.collection('preauthorized').doc(emailKey).get();
+    if(preSnap.exists){
+      await db.collection('users').doc(currentUser.uid).update({ isPaid: true });
+      userDoc.isPaid = true;
+      if(selectedCategory) loadTestList();
+    }
+  }catch(e){ /* silent — sessionUnsub listener will still catch it if this fails */ }
+}
+document.addEventListener('visibilitychange', () => {
+  if(document.visibilityState === 'visible') checkPreauthorizedAndUnlock();
+});
+window.addEventListener('focus', checkPreauthorizedAndUnlock);
 
 const CATEGORIES = ['TET 1','TET 2','TAT SECONDARY','TAT HIGHER SECONDARY','HTAT','CCE','HMAT'];
 let selectedCategory = null;
@@ -1854,6 +1877,15 @@ document.addEventListener('keydown', e => {
     e.preventDefault();
   }
 });
+
+// ================= PWA SERVICE WORKER =================
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js').catch(err => {
+      console.warn('Service worker registration failed:', err);
+    });
+  });
+}
 </script>
 </body>
 </html>
